@@ -11,5 +11,14 @@ config_version=5
 [application]
 
 config/name="Starfiles"
+run/main_scene="res://demo/CodeGeneratedDemo.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/terrain_3d/plugin.cfg")
+
+[rendering]
+
+scaling_3d/mode=2

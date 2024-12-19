@@ -1,0 +1,125 @@
+[gd_scene load_steps=17 format=3 uid="uid://7t7d64g24esp"]
+
+[ext_resource type="Texture2D" uid="uid://dg2otdmgmwb61" path="res://external_ressources/textures/rocks_01/rock030_alb_ht.png" id="1_t8hix"]
+[ext_resource type="Texture2D" uid="uid://bbrehvjaoygrx" path="res://external_ressources/textures/rocks_01/rock030_nrm_rgh.png" id="2_kup3d"]
+[ext_resource type="Texture2D" uid="uid://1y64ryf8ikj3" path="res://external_ressources/textures/grass_02/ground037_alb_ht.png" id="3_5jga2"]
+[ext_resource type="Texture2D" uid="uid://b1025ruae4ja" path="res://external_ressources/textures/grass_02/ground037_nrm_rgh.png" id="4_wpy5u"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_5duaw"]
+
+[sub_resource type="Sky" id="Sky_mpsdc"]
+sky_material = SubResource("ProceduralSkyMaterial_5duaw")
+
+[sub_resource type="Environment" id="Environment_o0m0n"]
+background_mode = 2
+sky = SubResource("Sky_mpsdc")
+ambient_light_source = 3
+sdfgi_min_cell_size = 16.0
+sdfgi_cascade0_distance = 1024.0
+sdfgi_max_distance = 16384.0
+fog_mode = 1
+fog_light_color = Color(0.851974, 0.909539, 1, 1)
+fog_light_energy = 1.75
+fog_density = 0.4151
+fog_sky_affect = 0.382
+fog_depth_begin = 0.0
+fog_depth_end = 4000.0
+
+[sub_resource type="Gradient" id="Gradient_vr1m7"]
+offsets = PackedFloat32Array(0.2, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_d8lcj"]
+noise_type = 2
+frequency = 0.0579
+cellular_jitter = 3.0
+cellular_return_type = 0
+domain_warp_enabled = true
+domain_warp_type = 1
+domain_warp_amplitude = 50.0
+domain_warp_fractal_type = 2
+domain_warp_fractal_lacunarity = 1.5
+domain_warp_fractal_gain = 1.0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_bov7h"]
+seamless = true
+color_ramp = SubResource("Gradient_vr1m7")
+noise = SubResource("FastNoiseLite_d8lcj")
+
+[sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_vaqj1"]
+_shader_parameters = {
+"_mouse_layer": 2147483648,
+"auto_base_texture": 0,
+"auto_height_reduction": 0.1,
+"auto_overlay_texture": 1,
+"auto_slope": 1.0,
+"blend_sharpness": 0.87,
+"dual_scale_far": 170.0,
+"dual_scale_near": 100.0,
+"dual_scale_reduction": 0.161,
+"dual_scale_texture": 0,
+"height_blending": true,
+"macro_variation1": Color(0.878431, 0.862745, 0.901961, 1),
+"macro_variation2": Color(0.704361, 0.808594, 0.600128, 1),
+"noise1_angle": 0.0,
+"noise1_offset": Vector2(0.5, 0.5),
+"noise1_scale": 0.04,
+"noise2_scale": 0.076,
+"noise3_scale": 0.225,
+"noise_texture": SubResource("NoiseTexture2D_bov7h"),
+"tri_scale_reduction": 0.3,
+"vertex_normals_distance": 128.0
+}
+world_background = 0
+auto_shader = true
+dual_scaling = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_586mg"]
+transparency = 4
+cull_mode = 2
+vertex_color_use_as_albedo = true
+backlight_enabled = true
+backlight = Color(0.5, 0.5, 0.5, 1)
+distance_fade_mode = 1
+distance_fade_min_distance = 960.0
+distance_fade_max_distance = 480.0
+
+[sub_resource type="Terrain3DMeshAsset" id="Terrain3DMeshAsset_xrgnj"]
+height_offset = 0.5
+density = 10.0
+material_override = SubResource("StandardMaterial3D_586mg")
+generated_type = 1
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_37buu"]
+name = "sand1-albedo"
+albedo_texture = ExtResource("1_t8hix")
+normal_texture = ExtResource("2_kup3d")
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_suphb"]
+name = "ground037_alb_ht"
+id = 1
+albedo_color = Color(0.67451, 0.74902, 0.686275, 1)
+albedo_texture = ExtResource("3_5jga2")
+normal_texture = ExtResource("4_wpy5u")
+
+[sub_resource type="Terrain3DAssets" id="Terrain3DAssets_dqajv"]
+mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_xrgnj")])
+texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_37buu"), SubResource("Terrain3DTextureAsset_suphb")])
+
+[node name="World" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_o0m0n")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, -0.922538, 0.385906, 0, -0.385906, -0.922538, 0, 91.7002, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 200.0
+
+[node name="Terrain3D" type="Terrain3D" parent="."]
+data_directory = "res://ressources/maps/Apsur"
+material = SubResource("Terrain3DMaterial_vaqj1")
+assets = SubResource("Terrain3DAssets_dqajv")
+vertex_spacing = 3.0
+top_level = true
+metadata/_edit_lock_ = true

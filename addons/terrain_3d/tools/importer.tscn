@@ -2,11 +2,11 @@
 
 [ext_resource type="Script" path="res://addons/terrain_3d/tools/importer.gd" id="1_60b8f"]
 
-[sub_resource type="Gradient" id="Gradient_88f3t"]
+[sub_resource type="Gradient" id="Gradient_mjj6f"]
 offsets = PackedFloat32Array(0.2, 1)
 colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_muvel"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_mti8w"]
 noise_type = 2
 frequency = 0.03
 cellular_jitter = 3.0
@@ -18,12 +18,12 @@ domain_warp_fractal_type = 2
 domain_warp_fractal_lacunarity = 1.5
 domain_warp_fractal_gain = 1.0
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ve0yk"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_h0hsp"]
 seamless = true
-color_ramp = SubResource("Gradient_88f3t")
-noise = SubResource("FastNoiseLite_muvel")
+color_ramp = SubResource("Gradient_mjj6f")
+noise = SubResource("FastNoiseLite_mti8w")
 
-[sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_p55u0"]
+[sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_4528s"]
 _shader_parameters = {
 "blend_sharpness": 0.87,
 "height_blending": true,
@@ -34,30 +34,38 @@ _shader_parameters = {
 "noise1_scale": 0.04,
 "noise2_scale": 0.076,
 "noise3_scale": 0.225,
-"noise_texture": SubResource("NoiseTexture2D_ve0yk"),
+"noise_texture": SubResource("NoiseTexture2D_h0hsp"),
 "vertex_normals_distance": 128.0
 }
 show_checkered = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8rvqy"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lblup"]
+transparency = 4
 cull_mode = 2
 vertex_color_use_as_albedo = true
 backlight_enabled = true
 backlight = Color(0.5, 0.5, 0.5, 1)
+distance_fade_mode = 1
+distance_fade_min_distance = 960.0
+distance_fade_max_distance = 480.0
 
-[sub_resource type="Terrain3DMeshAsset" id="Terrain3DMeshAsset_7je72"]
+[sub_resource type="Terrain3DMeshAsset" id="Terrain3DMeshAsset_vorsy"]
 height_offset = 0.5
 density = 10.0
-material_override = SubResource("StandardMaterial3D_8rvqy")
+material_override = SubResource("StandardMaterial3D_lblup")
 generated_type = 1
 
-[sub_resource type="Terrain3DAssets" id="Terrain3DAssets_op32e"]
-mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_7je72")])
+[sub_resource type="Terrain3DAssets" id="Terrain3DAssets_swgl5"]
+mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_vorsy")])
 
 [node name="Importer" type="Terrain3D"]
-material = SubResource("Terrain3DMaterial_p55u0")
-assets = SubResource("Terrain3DAssets_op32e")
+material = SubResource("Terrain3DMaterial_4528s")
+assets = SubResource("Terrain3DAssets_swgl5")
 mesh_lods = 8
 top_level = true
 script = ExtResource("1_60b8f")
+height_file_name = "/run/media/florian/disk2/Work/Games/Godot Workfolder/Godot 4/starfiles/external_ressources/heightmap/height.res"
+import_position = Vector2i(-2048, -2048)
+height_offset = 56.5
+destination_directory = "res://ressources/maps/Apsur"
 metadata/_edit_lock_ = true

@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3 uid="uid://dj3eloo0v8rss"]
+
+[ext_resource type="PackedScene" uid="uid://8oy3xm2sff8" path="res://addons/character-controller/fps/fps_controller_3d.tscn" id="1_ipnwl"]
+[ext_resource type="Script" path="res://addons/character-controller/example/main/player.gd" id="2_0y477"]
+[ext_resource type="Environment" uid="uid://b3cn01u84faiy" path="res://addons/character-controller/example/main/underwater.tres" id="3_611k8"]
+[ext_resource type="PackedScene" path="res://addons/character-controller/example/main/audios/player_audios.tscn" id="4_7dfpu"]
+
+[node name="Player" instance=ExtResource("1_ipnwl")]
+script = ExtResource("2_0y477")
+input_back_action_name = "move_backward"
+input_forward_action_name = "move_forward"
+input_left_action_name = "move_left"
+input_right_action_name = "move_right"
+input_sprint_action_name = "move_sprint"
+input_jump_action_name = "move_jump"
+input_crouch_action_name = "move_crouch"
+input_fly_mode_action_name = "move_fly_mode"
+underwater_env = ExtResource("3_611k8")
+
+[node name="Camera3D" type="Camera3D" parent="Head/FirstPersonCameraReference" index="0"]
+
+[node name="Player Audios" parent="." index="9" instance=ExtResource("4_7dfpu")]

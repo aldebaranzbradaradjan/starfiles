@@ -62,7 +62,7 @@ lowp vec3 draw_clouds(vec3 raydir, vec3 sundir_real, vec2 uv, bool isNight)
 	sky_image = mix(vec3(0.0), sky_image*0.5 + sky_image*mymie*1.0, max(0.3, min(0.5, pow(sun_dist, 2.0))));//*sky + sky * sky_image*0.9;
 	sky_image += sky_image_bottom*0.05 + sky_image_bottom*mymie*1.0;
 	//sky_image += sky_image2 * 0.2 + sky_image * sky_image2;
-	
+
 	sky_image *= clouds_tint.rgb;
 	return clamp(sky_image,0.0,1.0);
 }
@@ -95,7 +95,7 @@ lowp vec3 draw_night_sky (lowp float sky_amount, lowp vec3 rd, lowp vec2 sky_coo
 	lowp vec2 moon_amount = draw_moon(rd);
 	lowp float stars = texture(star_sky,sky_coords).r; // mipmap off for correct steching; starfield texture from this https://opengameart.org/content/night-sky-skybox-generator ande convert to panorama with this https://danilw.github.io/GLSL-howto/cubemap_to_panorama_js/cubemap_to_panorama.html
 	lowp vec3 star_vec = stars*0.1 + moon_tint.rgb * moon_amount.x;//Here we mix with the clouds so that there is no black border. But so that the Moon does not Shine through the clouds.
-	
+
 	lowp float sun_dist = max(0.0,dot(vec3(0.0,1.0,0.0), rd));
 
 	float movement = 52.0 + TIME * 0.1 / 128.0 * 0.6;

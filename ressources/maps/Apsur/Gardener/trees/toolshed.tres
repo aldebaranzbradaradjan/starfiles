@@ -7,9 +7,9 @@
 resource_name = "Toolshed_Brush"
 script = ExtResource("1_uxfl2")
 behavior/behavior_brush_type = 0
-shape/shape_volume_size = 100.0
+shape/shape_volume_size = 53.06
 shape/shape_projection_size = 1.0
-behavior/behavior_strength = 1.0
+behavior/behavior_strength = 0.11
 behavior/behavior_passthrough = false
 behavior/behavior_overlap_mode = 0
 behavior/behavior_no_settings_text = "This brush has no additional settings"
@@ -20,10 +20,10 @@ resource_name = "Toolshed_Brush"
 script = ExtResource("1_uxfl2")
 behavior/behavior_brush_type = 1
 shape/shape_volume_size = 100.0
-shape/shape_projection_size = 100.0
+shape/shape_projection_size = 388.0
 behavior/behavior_strength = 1.0
 behavior/behavior_passthrough = false
-behavior/behavior_overlap_mode = 0
+behavior/behavior_overlap_mode = 1
 behavior/behavior_no_settings_text = "This brush has no additional settings"
 metadata/class = "Toolshed_Brush"
 

@@ -23,6 +23,10 @@ settings/stdout/print_fps=true
 
 window/vsync/vsync_mode=0
 
+[editor]
+
+movie_writer/movie_file="/run/media/florian/disk2/Work/Games/Godot Workfolder/Godot 4/starfiles/video.avi"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/Imposter/plugin.cfg", "res://addons/character-controller/plugin.cfg", "res://addons/dreadpon.spatial_gardener/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")

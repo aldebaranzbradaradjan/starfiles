@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d1mhleup6n5ig"
-path="res://.godot/imported/741698737002_.pic.jpg-102857c9ddcff549e17c10c2d89b42b0.ctex"
+uid="uid://xm4icm6wuu3g"
+path="res://.godot/imported/apsur.png-bc3ca5be1ad22e87ba10877f81955b9c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://guide/741698737002_.pic.jpg"
-dest_files=["res://.godot/imported/741698737002_.pic.jpg-102857c9ddcff549e17c10c2d89b42b0.ctex"]
+source_file="res://apsur.png"
+dest_files=["res://.godot/imported/apsur.png-bc3ca5be1ad22e87ba10877f81955b9c.ctex"]
 
 [params]
 

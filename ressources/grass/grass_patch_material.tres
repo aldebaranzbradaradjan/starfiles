@@ -1,8 +1,8 @@
 [gd_resource type="ShaderMaterial" load_steps=7 format=3 uid="uid://de7j6v26sqr46"]
 
 [ext_resource type="Texture2D" uid="uid://b4vxfop4u3b32" path="res://ressources/maps/Apsur/baked_map_color.png" id="1_ddw64"]
-[ext_resource type="Texture2D" uid="uid://dqvma5k7x1div" path="res://external_ressources/heightmap/Apsur/heightmap_test.res" id="2_ok14l"]
-[ext_resource type="Texture2D" uid="uid://diaxbb8450akj" path="res://external_ressources/textures/grass_bilboard/albedo_streched.png" id="2_xy50i"]
+[ext_resource type="Texture2D" uid="uid://dqvma5k7x1div" path="res://external_ressources/external_ressources/heightmap/Apsur/heightmap_test.res" id="2_ok14l"]
+[ext_resource type="Texture2D" uid="uid://diaxbb8450akj" path="res://external_ressources/external_ressources/textures/grass_bilboard/albedo_streched.png" id="2_xy50i"]
 
 [sub_resource type="Shader" id="Shader_h583b"]
 code = "shader_type spatial;

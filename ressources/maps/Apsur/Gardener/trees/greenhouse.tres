@@ -1,15 +1,15 @@
 [gd_resource type="Resource" load_steps=23 format=3 uid="uid://dya7r4ywluq31"]
 
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse.gd" id="1_51oc4"]
-[ext_resource type="ArrayMesh" uid="uid://2l2i58855ewb" path="res://external_ressources/trees/treeit/treeit_pine_01/mesh.res" id="1_rq8m0"]
+[ext_resource type="ArrayMesh" uid="uid://2l2i58855ewb" path="res://external_ressources/external_ressources/trees/treeit/treeit_pine_01/mesh.res" id="1_rq8m0"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="2_wmcvs"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" id="3_e4qri"]
-[ext_resource type="QuadMesh" uid="uid://d0twedgeu5na" path="res://external_ressources/trees/treeit/treeit_pine_01/impostor/Mesh_imposter.tres" id="3_vijay"]
+[ext_resource type="QuadMesh" uid="uid://d0twedgeu5na" path="res://external_ressources/external_ressources/trees/treeit/treeit_pine_01/impostor/Mesh_imposter.tres" id="3_vijay"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant_state.gd" id="4_lawh6"]
-[ext_resource type="ArrayMesh" uid="uid://cqlfqpmee2pab" path="res://external_ressources/trees/treeit/treeit_spruce_01/mesh.res" id="5_t1881"]
-[ext_resource type="QuadMesh" uid="uid://bau4ertq3l2gj" path="res://external_ressources/trees/treeit/treeit_spruce_01/impostor/Mesh2_imposter.tres" id="7_dcixl"]
-[ext_resource type="ArrayMesh" uid="uid://21nrcjcsc72k" path="res://external_ressources/trees/treeit/treeit_oak_02/mesh.tres" id="8_i5kvw"]
-[ext_resource type="QuadMesh" uid="uid://be2b0adv4d05n" path="res://external_ressources/trees/treeit/treeit_oak_02/impostor/Mesh_imposter.tres" id="9_a73jq"]
+[ext_resource type="ArrayMesh" uid="uid://cqlfqpmee2pab" path="res://external_ressources/external_ressources/trees/treeit/treeit_spruce_01/mesh.res" id="5_t1881"]
+[ext_resource type="QuadMesh" uid="uid://bau4ertq3l2gj" path="res://external_ressources/external_ressources/trees/treeit/treeit_spruce_01/impostor/Mesh2_imposter.tres" id="7_dcixl"]
+[ext_resource type="ArrayMesh" uid="uid://21nrcjcsc72k" path="res://external_ressources/external_ressources/trees/treeit/treeit_oak_02/mesh.tres" id="8_i5kvw"]
+[ext_resource type="QuadMesh" uid="uid://be2b0adv4d05n" path="res://external_ressources/external_ressources/trees/treeit/treeit_oak_02/impostor/Mesh_imposter.tres" id="9_a73jq"]
 
 [sub_resource type="Resource" id="Resource_x58no"]
 resource_name = "Greenhouse_LODVariant"
@@ -29,7 +29,8 @@ metadata/class = "Greenhouse_LODVariant"
 resource_name = "Greenhouse_Plant"
 script = ExtResource("3_e4qri")
 mesh/mesh_LOD_variants = [SubResource("Resource_x58no"), SubResource("Resource_q3ubj")]
-mesh/mesh_LOD_max_distance = 200.0
+mesh/selected_for_edit_resource = SubResource("Resource_q3ubj")
+mesh/mesh_LOD_max_distance = 50.0
 mesh/mesh_LOD_kill_distance = -1.0
 mesh/mesh_LOD_max_capacity = 75
 mesh/mesh_LOD_min_size = 1.0
@@ -86,7 +87,8 @@ metadata/class = "Greenhouse_LODVariant"
 resource_name = "Greenhouse_Plant"
 script = ExtResource("3_e4qri")
 mesh/mesh_LOD_variants = [SubResource("Resource_qv8k7"), SubResource("Resource_huw76")]
-mesh/mesh_LOD_max_distance = 200.0
+mesh/selected_for_edit_resource = SubResource("Resource_huw76")
+mesh/mesh_LOD_max_distance = 50.0
 mesh/mesh_LOD_kill_distance = -1.0
 mesh/mesh_LOD_max_capacity = 75
 mesh/mesh_LOD_min_size = 1.0
@@ -143,7 +145,7 @@ metadata/class = "Greenhouse_LODVariant"
 resource_name = "Greenhouse_Plant"
 script = ExtResource("3_e4qri")
 mesh/mesh_LOD_variants = [SubResource("Resource_ydqu4"), SubResource("Resource_iquhv")]
-mesh/mesh_LOD_max_distance = 200.0
+mesh/mesh_LOD_max_distance = 50.0
 mesh/mesh_LOD_kill_distance = -1.0
 mesh/mesh_LOD_max_capacity = 75
 mesh/mesh_LOD_min_size = 1.0

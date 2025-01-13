@@ -19,5 +19,6 @@ underwater_env = ExtResource("3_611k8")
 
 [node name="Camera3D" type="Camera3D" parent="Head/FirstPersonCameraReference" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.307645, 0)
+far = 200.0
 
 [node name="Player Audios" parent="." index="9" instance=ExtResource("4_7dfpu")]

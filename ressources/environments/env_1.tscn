@@ -1,0 +1,125 @@
+[gd_scene load_steps=15 format=3 uid="uid://cwco04c3urjpy"]
+
+[ext_resource type="Shader" path="res://ressources/sky/sky_shader/sky.gdshader" id="1_yt31d"]
+[ext_resource type="Texture2D" uid="uid://c6p3e43f7ytdj" path="res://ressources/sky/cloud_only_sky_3.jpeg" id="2_u4gtl"]
+[ext_resource type="Texture2D" uid="uid://cmutsymaxtebl" path="res://ressources/sky/cloud_only_sky_1.jpeg" id="3_j7l63"]
+[ext_resource type="Texture2D" uid="uid://dccvmggwa2n4" path="res://ressources/sky/cloud_only_sky_2.jpeg" id="4_ju1f2"]
+[ext_resource type="Texture2D" uid="uid://b3yt8t8w4c6qa" path="res://ressources/sky/sky_shader/moon.png" id="5_7hx77"]
+[ext_resource type="Texture2D" uid="uid://di83b1agd0op8" path="res://ressources/sky/sky_shader/starfield.png" id="6_k21x2"]
+[ext_resource type="Script" path="res://ressources/sky/sky_shader/sky.gd" id="7_bf2b3"]
+[ext_resource type="Shader" path="res://ressources/fog/atmosphere_fog_shader/atmosphere_fog_shader.gdshader" id="8_ylvqd"]
+
+[sub_resource type="Gradient" id="Gradient_dblpd"]
+colors = PackedColorArray(0, 0, 0, 1, 1, 0.927972, 0.943013, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_lluu8"]
+gradient = SubResource("Gradient_dblpd")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1xhr4"]
+shader = ExtResource("1_yt31d")
+shader_parameter/sky_color = Color(0.227865, 0.392502, 0.695312, 1)
+shader_parameter/sun_color = Color(0.335848, 0.533409, 0.734375, 1)
+shader_parameter/moon_tint = Color(1, 0.828125, 0.828125, 1)
+shader_parameter/clouds_tint = Color(1, 0.912, 0.843, 1)
+shader_parameter/SCATERRING = false
+shader_parameter/SUN_POS = Vector3(0, 0.624425, 0.781085)
+shader_parameter/MOON_POS = Vector3(0, -0.624425, -0.781085)
+shader_parameter/MOON_TEX_POS = Vector3(0, -0.901228, -0.433345)
+shader_parameter/LIGHTING_POS = Vector3(0, 1, 0)
+shader_parameter/lighting_strength = null
+shader_parameter/MOON_PHASE = -1.1
+shader_parameter/moon_size = 0.03
+shader_parameter/attenuation = 0.72
+shader_parameter/clouds_speed = 0.8
+shader_parameter/star_sky = ExtResource("6_k21x2")
+shader_parameter/moon = ExtResource("5_7hx77")
+shader_parameter/cloud_sky_up = ExtResource("4_ju1f2")
+shader_parameter/cloud_sky_down = ExtResource("3_j7l63")
+shader_parameter/cloud_sky_2 = ExtResource("2_u4gtl")
+
+[sub_resource type="Sky" id="Sky_mpsdc"]
+sky_material = SubResource("ShaderMaterial_1xhr4")
+
+[sub_resource type="Environment" id="Environment_o0m0n"]
+background_mode = 2
+sky = SubResource("Sky_mpsdc")
+ambient_light_source = 3
+ambient_light_color = Color(0.8, 0.7296, 0.6744, 0.8)
+ambient_light_sky_contribution = 0.21
+ambient_light_energy = 0.72
+tonemap_mode = 3
+tonemap_exposure = 0.53
+tonemap_white = 0.37
+ssr_max_steps = 512
+ssao_radius = 0.01
+ssao_intensity = 16.0
+ssil_radius = 16.0
+ssil_intensity = 16.0
+ssil_sharpness = 1.0
+sdfgi_enabled = true
+sdfgi_min_cell_size = 16.0
+sdfgi_y_scale = 2
+glow_intensity = 0.05
+glow_bloom = 1.0
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(1, 0.912, 0.843, 1)
+fog_light_energy = 0.32
+fog_density = 0.4243
+fog_sky_affect = 0.169
+fog_height = 160.89
+fog_height_density = 0.0018
+fog_depth_curve = 0.999996
+fog_depth_begin = 0.0
+fog_depth_end = 984.7
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.002
+volumetric_fog_albedo = Color(1, 0.912, 0.843, 1)
+volumetric_fog_emission_energy = 0.0
+volumetric_fog_gi_inject = 3.5
+volumetric_fog_anisotropy = 0.8
+volumetric_fog_length = 88.0
+volumetric_fog_detail_spread = 6.0
+volumetric_fog_ambient_inject = 1.37
+volumetric_fog_temporal_reprojection_enabled = false
+adjustment_enabled = true
+adjustment_color_correction = SubResource("GradientTexture2D_lluu8")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_acbfk"]
+shader = ExtResource("8_ylvqd")
+shader_parameter/base_density = 0.005
+shader_parameter/base_color = Color(1, 0.790078, 0.947519, 1)
+shader_parameter/fade_out_height = 2.0
+shader_parameter/fade_out_distance = 400.0
+shader_parameter/noise_amounts = Vector3(1, 1, 1)
+shader_parameter/noise_scales = Vector3(0.1, 0.1, 0.1)
+shader_parameter/noise_velocity1 = Vector3(0.255, 0, 0)
+shader_parameter/noise_velocity2 = Vector3(0, 0.12, 0)
+shader_parameter/noise_velocity3 = Vector3(0.01, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" node_paths=PackedStringArray("sun_moon")]
+environment = SubResource("Environment_o0m0n")
+script = ExtResource("7_bf2b3")
+sun_moon = NodePath("DirectionalLight3D")
+time_of_day_setup = 0.357
+moon_phase = -1.1
+moon_tint = Color(1, 0.828125, 0.828125, 1)
+night_level_light = 0.4
+
+[node name="FogVolume" type="FogVolume" parent="."]
+shape = 4
+material = SubResource("ShaderMaterial_acbfk")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-1, 1.29521e-08, -8.64578e-08, 0, 0.988962, 0.148154, 8.74228e-08, 0.148154, -0.988962, 0, 0.148155, -0.988964)
+light_color = Color(1, 0.912, 0.843, 1)
+light_energy = 0.578523
+light_indirect_energy = 3.5
+light_volumetric_fog_energy = 2.811
+shadow_enabled = true
+shadow_opacity = 0.8
+directional_shadow_split_1 = 0.045
+directional_shadow_split_2 = 0.15
+directional_shadow_split_3 = 0.32
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 900.0

@@ -102,6 +102,7 @@ var moon_axis_rotation: Vector3 = Vector3(1.0,0.0,0.0):
 @export var moon_light: Color = Color(0.657, 0.657, 1);
 @export var sunset_light: Color = Color(1, 0.912, 0.843);
 @export var day_light: Color = Color(1.0, 1.0, 1.0, 1.0);
+@export var light_mult: float = 1.0;
 @export var sunset_offset: float = -0.1;
 @export var sunset_range: float = 0.2;
 @export_range(0.0, 1.0, 0.01) var night_level_light: float = 0.43;
@@ -157,7 +158,7 @@ func set_time():
 		if !sun_pos.is_equal_approx(Vector3.UP) and !sun_pos.is_equal_approx(Vector3.DOWN):
 			sun_moon.look_at_from_position(sun_pos,Vector3.ZERO,Vector3.UP); # move sun to position and look at center scene from position
 			
-	light_energy = light_energy * (1-clouds_coverage * 0.5) * 0.9;
+	light_energy = light_energy * (1-clouds_coverage * 0.5) * 0.9 * light_mult;
 	sun_moon.light_energy = light_energy;
 	sun_moon.light_indirect_energy = 3.5 + (2.5 if (sun_pos.y < 0.0) else 0.0);
 	sun_moon.shadow_opacity = (0.19 if (sun_pos.y < 0.0) else 0.8);

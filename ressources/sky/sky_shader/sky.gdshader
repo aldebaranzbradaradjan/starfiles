@@ -113,8 +113,8 @@ void sky() {
 	bool isNight = SUN_POS.y < 0.0;
 	//sun_dist_real = sun_dist_real * normalize(SUN_POS.y);
 	sky = extra_cheap_atmosphere(rd, SUN_POS, SKY_COORDS);
-	vec3 top_clouds = draw_clouds(rd, SUN_POS, SKY_COORDS, isNight) ;//* sun_dist_real;
-	sky = max(sky, top_clouds*sky + top_clouds);
+	vec3 top_clouds = draw_clouds(rd, SUN_POS, SKY_COORDS, isNight)*2. ;//* sun_dist_real;
+	sky = max(sky, top_clouds*sky + top_clouds + sky);
 	sky = mix(vec3(0.0), sky, smoothstep(-0.1,0.0,rd.y));
 	if(SUN_POS.y < 0.0) sky = sky / normalize(abs(SUN_POS.y))*0.2;
 	sky = mix(sky, draw_night_sky(max(max(sky.b, sky.r), sky.g), rd, SKY_COORDS, top_clouds.r, isNight), 0.4);

@@ -1,0 +1,375 @@
+[gd_scene load_steps=39 format=3 uid="uid://h2pxte8ho7nv"]
+
+[ext_resource type="PackedScene" uid="uid://gj3xwsg2cpmo" path="res://external_ressources/maps/zur_desert_temple.glb" id="1_5co2l"]
+[ext_resource type="LightmapGIData" uid="uid://clgafom8j0a4y" path="res://ressources/maps/Zur/lightmap/zur_desert_temple.lmbake" id="2_8fm1l"]
+[ext_resource type="PackedScene" uid="uid://cwco04c3urjpy" path="res://ressources/environments/env_1.tscn" id="4_pxknk"]
+[ext_resource type="PackedScene" uid="uid://dj3eloo0v8rss" path="res://ressources/player/tps_fps_controller_3d.tscn" id="5_vt7hh"]
+[ext_resource type="Shader" path="res://ressources/sky/sky_shader/sky.gdshader" id="5_wbylx"]
+[ext_resource type="Texture2D" uid="uid://bubfm8k6u7uki" path="res://external_ressources/textures/desert_sand/ground_0024_color_1k.jpg" id="6_orfyq"]
+[ext_resource type="Shader" path="res://ressources/fog/atmosphere_fog_shader/atmosphere_fog_shader.gdshader" id="6_u0y5u"]
+[ext_resource type="PackedScene" uid="uid://dw3g6o6a1pgby" path="res://external_ressources/models/grass_25D.glb" id="7_2gac5"]
+[ext_resource type="Texture2D" uid="uid://6hq038py1n7t" path="res://external_ressources/textures/desert_sand/ground_0024_normal_opengl_1k.png" id="7_l6noj"]
+[ext_resource type="PackedScene" uid="uid://o3nh71h1l7sv" path="res://addons/gd_planar_reflections/planar_reflection.tscn" id="9_cjoqw"]
+[ext_resource type="Material" uid="uid://c4p4jr823j1gw" path="res://addons/gd_planar_reflections/ReflectionMaterial.tres" id="10_oj5e7"]
+
+[sub_resource type="Gradient" id="Gradient_5hx2i"]
+colors = PackedColorArray(0, 0, 0, 1, 1, 0.927972, 0.943013, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_3fsjg"]
+gradient = SubResource("Gradient_5hx2i")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_x2xwf"]
+load_path = "res://.godot/imported/cloud_only_sky_3.jpeg-07b8d8c7ab19a110d1280895b282b49c.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_sgubm"]
+load_path = "res://.godot/imported/cloud_only_sky_1.jpeg-20ac617a5cfbf708606c3b441b2e9da6.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_jtg3d"]
+load_path = "res://.godot/imported/cloud_only_sky_2.jpeg-757d9ff16d4365b73234fc9b79d6821f.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_0f5jn"]
+load_path = "res://.godot/imported/moon.png-8787ca6a3c218631a36958f307797171.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_oirou"]
+load_path = "res://.godot/imported/starfield.png-e581183287853b33485a577c88bf7248.s3tc.ctex"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bw387"]
+shader = ExtResource("5_wbylx")
+shader_parameter/sky_color = Color(0, 0.687033, 1, 1)
+shader_parameter/sun_color = Color(0.335848, 0.533409, 0.734375, 1)
+shader_parameter/moon_tint = Color(1, 0.828125, 0.828125, 1)
+shader_parameter/clouds_tint = Color(1, 0.912, 0.843, 1)
+shader_parameter/SCATERRING = false
+shader_parameter/SUN_POS = Vector3(0, 0.334794, 0.942291)
+shader_parameter/MOON_POS = Vector3(0, -0.334794, -0.942291)
+shader_parameter/MOON_TEX_POS = Vector3(0, -0.816944, -0.576717)
+shader_parameter/LIGHTING_POS = Vector3(0, 1, 0)
+shader_parameter/lighting_strength = null
+shader_parameter/MOON_PHASE = -1.1
+shader_parameter/moon_size = 0.03
+shader_parameter/attenuation = 1.0
+shader_parameter/clouds_speed = 0.8
+shader_parameter/star_sky = SubResource("CompressedTexture2D_oirou")
+shader_parameter/moon = SubResource("CompressedTexture2D_0f5jn")
+shader_parameter/cloud_sky_up = SubResource("CompressedTexture2D_jtg3d")
+shader_parameter/cloud_sky_down = SubResource("CompressedTexture2D_sgubm")
+shader_parameter/cloud_sky_2 = SubResource("CompressedTexture2D_x2xwf")
+
+[sub_resource type="Sky" id="Sky_6fnt2"]
+sky_material = SubResource("ShaderMaterial_bw387")
+
+[sub_resource type="Environment" id="Environment_k4oqy"]
+background_mode = 2
+sky = SubResource("Sky_6fnt2")
+ambient_light_source = 3
+ambient_light_color = Color(0.8, 0.7296, 0.6744, 0.8)
+ambient_light_sky_contribution = 0.21
+ambient_light_energy = 1.1232
+tonemap_mode = 2
+tonemap_exposure = 0.53
+tonemap_white = 0.37
+ssr_max_steps = 512
+ssao_radius = 16.0
+ssao_intensity = 16.0
+ssil_radius = 16.0
+ssil_intensity = 16.0
+ssil_sharpness = 1.0
+sdfgi_min_cell_size = 16.0
+sdfgi_cascade0_distance = 1024.0
+sdfgi_max_distance = 16384.0
+sdfgi_y_scale = 2
+glow_enabled = true
+glow_intensity = 0.05
+glow_bloom = 1.0
+fog_enabled = true
+fog_light_color = Color(1, 0.912, 0.843, 1)
+fog_light_energy = 0.55
+fog_density = 0.0005
+fog_sky_affect = 0.347
+fog_height = 80.58
+fog_height_density = 0.002
+fog_depth_curve = 0.999996
+fog_depth_begin = 1098.0
+fog_depth_end = 1960.8
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.002
+volumetric_fog_albedo = Color(1, 0.912, 0.843, 1)
+volumetric_fog_emission_energy = 0.0
+volumetric_fog_gi_inject = 3.5
+volumetric_fog_anisotropy = 0.67
+volumetric_fog_length = 88.0
+volumetric_fog_detail_spread = 6.0
+volumetric_fog_ambient_inject = 1.37
+volumetric_fog_temporal_reprojection_enabled = false
+adjustment_enabled = true
+adjustment_color_correction = SubResource("GradientTexture2D_3fsjg")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p60tx"]
+shader = ExtResource("6_u0y5u")
+shader_parameter/base_density = 0.002
+shader_parameter/base_color = Color(1, 0.790078, 0.947519, 1)
+shader_parameter/fade_out_height = 2.0
+shader_parameter/fade_out_distance = 10000.0
+shader_parameter/noise_amounts = Vector3(1, 1, 1)
+shader_parameter/noise_scales = Vector3(0.05, 0.05, 0.05)
+shader_parameter/noise_velocity1 = Vector3(0.255, 0, 0)
+shader_parameter/noise_velocity2 = Vector3(0, 0.12, 0)
+shader_parameter/noise_velocity3 = Vector3(0.01, 0, 0)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_t7hr6"]
+size = Vector3(47.8377, 1, 49.7244)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bmifu"]
+size = Vector3(41.5776, 1, 20.2015)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_w1fqb"]
+size = Vector3(16.0497, 1, 15.7863)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_x08go"]
+size = Vector3(5.3875, 1, 20.848)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ceaxw"]
+size = Vector3(0.629297, 1, 20.848)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hhq01"]
+size = Vector3(1.13301, 1.06555, 20.848)
+
+[sub_resource type="Gradient" id="Gradient_d38qu"]
+offsets = PackedFloat32Array(0.2, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_3quca"]
+noise_type = 2
+frequency = 0.03
+cellular_jitter = 3.0
+cellular_return_type = 0
+domain_warp_enabled = true
+domain_warp_type = 1
+domain_warp_amplitude = 50.0
+domain_warp_fractal_type = 2
+domain_warp_fractal_lacunarity = 1.5
+domain_warp_fractal_gain = 1.0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_gnd5o"]
+seamless = true
+color_ramp = SubResource("Gradient_d38qu")
+noise = SubResource("FastNoiseLite_3quca")
+
+[sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_xd648"]
+_shader_parameters = {
+"blend_sharpness": 0.87,
+"height_blending": true,
+"macro_variation1": Color(1, 1, 1, 1),
+"macro_variation2": Color(1, 1, 1, 1),
+"noise1_angle": 0.0,
+"noise1_offset": Vector2(0.5, 0.5),
+"noise1_scale": 0.04,
+"noise2_scale": 0.076,
+"noise3_scale": 0.225,
+"noise_texture": SubResource("NoiseTexture2D_gnd5o"),
+"vertex_normals_distance": 128.0,
+"world_noise_height": 9.8,
+"world_noise_lod_distance": 7500.0,
+"world_noise_max_octaves": 4,
+"world_noise_min_octaves": 2,
+"world_noise_offset": Vector3(0, 0, 0),
+"world_noise_region_blend": 0.95,
+"world_noise_scale": 11.44
+}
+world_background = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gbw33"]
+transparency = 4
+cull_mode = 2
+vertex_color_use_as_albedo = true
+backlight_enabled = true
+backlight = Color(0.5, 0.5, 0.5, 1)
+distance_fade_mode = 1
+distance_fade_min_distance = 960.0
+distance_fade_max_distance = 480.0
+
+[sub_resource type="Terrain3DMeshAsset" id="Terrain3DMeshAsset_ibsm4"]
+height_offset = 0.5
+density = 10.0
+material_override = SubResource("StandardMaterial3D_gbw33")
+generated_type = 1
+
+[sub_resource type="Terrain3DMeshAsset" id="Terrain3DMeshAsset_d8sq8"]
+name = "grass_25D"
+id = 1
+density = 1.66312
+visibility_range = 101.6
+scene_file = ExtResource("7_2gac5")
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_lnuw2"]
+name = "ground_0024_color_1k"
+albedo_texture = ExtResource("6_orfyq")
+normal_texture = ExtResource("7_l6noj")
+
+[sub_resource type="Terrain3DAssets" id="Terrain3DAssets_qlmiv"]
+mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_ibsm4"), SubResource("Terrain3DMeshAsset_d8sq8")])
+texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_lnuw2")])
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_38k76"]
+material = ExtResource("10_oj5e7")
+size = Vector2(5000, 5000)
+subdivide_width = 20
+subdivide_depth = 20
+
+[node name="world" type="Node3D"]
+
+[node name="LightmapGI" type="LightmapGI" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.658, 4.87151, 5.9124)
+light_data = ExtResource("2_8fm1l")
+
+[node name="zur_desert_temple" parent="." instance=ExtResource("1_5co2l")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -183.489, 0.628107, 51.9631)
+
+[node name="ancient_arch_6b_001" parent="zur_desert_temple" index="0"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_acrh_5_001" parent="zur_desert_temple" index="1"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_arch_6_001" parent="zur_desert_temple" index="2"]
+extra_cull_margin = 16384.0
+
+[node name="SW house 2" parent="zur_desert_temple" index="3"]
+extra_cull_margin = 16384.0
+
+[node name="SW house 2_001" parent="zur_desert_temple" index="4"]
+extra_cull_margin = 16384.0
+
+[node name="element 4" parent="zur_desert_temple" index="5"]
+extra_cull_margin = 16384.0
+
+[node name="element 20" parent="zur_desert_temple" index="6"]
+extra_cull_margin = 16384.0
+
+[node name="element 4_001" parent="zur_desert_temple" index="7"]
+extra_cull_margin = 16384.0
+
+[node name="element 4_002" parent="zur_desert_temple" index="8"]
+extra_cull_margin = 16384.0
+
+[node name="element 4_003" parent="zur_desert_temple" index="9"]
+extra_cull_margin = 16384.0
+
+[node name="element 4_005" parent="zur_desert_temple" index="10"]
+extra_cull_margin = 16384.0
+
+[node name="element 4_004" parent="zur_desert_temple" index="11"]
+extra_cull_margin = 16384.0
+
+[node name="element 4_006" parent="zur_desert_temple" index="12"]
+extra_cull_margin = 16384.0
+
+[node name="element 4_007" parent="zur_desert_temple" index="13"]
+extra_cull_margin = 16384.0
+
+[node name="element 9" parent="zur_desert_temple" index="14"]
+extra_cull_margin = 16384.0
+
+[node name="element 9_001" parent="zur_desert_temple" index="15"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_arch_6b_002" parent="zur_desert_temple" index="16"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_arch_6b_003" parent="zur_desert_temple" index="17"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_arch_2_001" parent="zur_desert_temple" index="18"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_arch_4c_001" parent="zur_desert_temple" index="19"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_arch_4_002" parent="zur_desert_temple" index="20"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_acrh_5_003" parent="zur_desert_temple" index="21"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_arch_4_001" parent="zur_desert_temple" index="22"]
+extra_cull_margin = 16384.0
+
+[node name="ancient_arch_4b_001" parent="zur_desert_temple" index="23"]
+extra_cull_margin = 16384.0
+
+[node name="elem7_001" parent="zur_desert_temple" index="24"]
+extra_cull_margin = 16384.0
+
+[node name="WorldEnvironment" parent="." instance=ExtResource("4_pxknk")]
+environment = SubResource("Environment_k4oqy")
+time_of_day_setup = 0.779
+light_mult = 1.56
+
+[node name="FogVolume" parent="WorldEnvironment" index="0"]
+material = SubResource("ShaderMaterial_p60tx")
+
+[node name="DirectionalLight3D" parent="WorldEnvironment" index="1"]
+transform = Transform3D(1, 0, 0, 0, 0.942289, 0.334793, 0, -0.334793, 0.942289, 0, 0.334794, 0.942291)
+light_energy = 1.1232
+directional_shadow_max_distance = 500.0
+
+[node name="Player" parent="." instance=ExtResource("5_vt7hh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9205, 23.6668, 14.3157)
+
+[node name="Node3D" type="Node3D" parent="."]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.628107, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0613146, 9.24457, -17.595)
+shape = SubResource("BoxShape3D_t7hr6")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.314929, 9.24457, 17.5264)
+shape = SubResource("BoxShape3D_bmifu")
+
+[node name="CollisionShape3D6" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.906171, 3.59725, 55.2677)
+shape = SubResource("BoxShape3D_w1fqb")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 0.969445, -0.245307, 0, 0.245307, 0.969445, 0.646691, 6.68871, 37.5825)
+shape = SubResource("BoxShape3D_x08go")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 0.969445, -0.245307, 0, 0.245307, 0.969445, -1.73241, 7.30498, 37.5825)
+shape = SubResource("BoxShape3D_ceaxw")
+
+[node name="CollisionShape3D5" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 0.969445, -0.245307, 0, 0.245307, 0.969445, 3.18672, 7.30498, 37.5825)
+shape = SubResource("BoxShape3D_ceaxw")
+
+[node name="CollisionShape3D7" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 0.93358, -0.358368, 0, 0.358368, 0.93358, 0.646691, -0.0943296, 72.6865)
+shape = SubResource("BoxShape3D_x08go")
+
+[node name="CollisionShape3D8" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 0.93358, -0.358368, 0, 0.358368, 0.93358, -1.98427, 0.904807, 73.0174)
+shape = SubResource("BoxShape3D_hhq01")
+
+[node name="CollisionShape3D9" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 0.93358, -0.358368, 0, 0.358368, 0.93358, 3.66775, 0.904807, 73.0174)
+shape = SubResource("BoxShape3D_hhq01")
+
+[node name="Terrain3D" type="Terrain3D" parent="."]
+data_directory = "res://ressources/maps/Zur/terrain3d"
+material = SubResource("Terrain3DMaterial_xd648")
+assets = SubResource("Terrain3DAssets_qlmiv")
+top_level = true
+metadata/_edit_lock_ = true
+
+[node name="PlanarReflection" parent="." node_paths=PackedStringArray("main_cam") instance=ExtResource("9_cjoqw")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 1.1325, 0)
+mesh = SubResource("PlaneMesh_38k76")
+main_cam = NodePath("../Player/Head/FirstPersonCameraReference/Camera3D")
+reflection_camera_resolution = Vector2i(320, 180)
+
+[editable path="zur_desert_temple"]
+[editable path="WorldEnvironment"]
+[editable path="Player"]

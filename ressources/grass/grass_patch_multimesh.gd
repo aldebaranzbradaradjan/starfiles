@@ -6,8 +6,7 @@ extends MultiMeshInstance3D
 @export var chunk_material: Material  # Le matériau pour chaque chunk
 @export var player: Node3D  # Référence au joueur
 
-const GRID_SIZE = 10  # Grille de 3x3
-const GRID_RADIUS = 1  # Rayon de la grille (1 = 3x3)
+const GRID_SIZE = 3  # Grille de 3x3
 
 func _ready():
 	_initialize_multimesh()

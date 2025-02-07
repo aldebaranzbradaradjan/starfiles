@@ -1,0 +1,804 @@
+[gd_scene load_steps=48 format=3 uid="uid://thiblxndgel2"]
+
+[ext_resource type="Texture2D" uid="uid://c3mtwys7kwsxm" path="res://external_ressources/textures/water/bwr_caustic.png" id="2_lsw7k"]
+[ext_resource type="Texture2D" uid="uid://b3yt8t8w4c6qa" path="res://ressources/sky/sky_shader/moon.png" id="3_558t6"]
+[ext_resource type="Texture2D" uid="uid://b5hqpr5lc5anb" path="res://external_ressources/textures/water/Water_N_B.png" id="4_4wbti"]
+[ext_resource type="Texture2D" uid="uid://bn2nsvm8ys4m4" path="res://external_ressources/textures/water/Water_UV.png" id="5_3oxn4"]
+[ext_resource type="Texture2D" uid="uid://cccbud3udp7k7" path="res://external_ressources/textures/rock_boulder_01/rock_boulder_dry_diff_1k.jpg" id="6_uy2n4"]
+[ext_resource type="Texture2D" uid="uid://b7vqo77swj3i8" path="res://external_ressources/textures/rock_boulder_01/rock_boulder_dry_arm_1k.jpg" id="7_grqso"]
+[ext_resource type="Texture2D" uid="uid://fsr51mekgnes" path="res://external_ressources/textures/rock_boulder_01/rock_boulder_dry_nor_gl_1k.jpg" id="8_peor8"]
+[ext_resource type="Texture2D" uid="uid://b4bm2563atc5b" path="res://external_ressources/textures/rock_boulder_01/rock_boulder_dry_rough_1k.jpg" id="9_i2tmc"]
+[ext_resource type="Texture2D" uid="uid://dx8d60hn4sby6" path="res://external_ressources/textures/dry_riverbed_01/dry_riverbed_rock_diff_1k.jpg" id="10_dubw8"]
+[ext_resource type="Texture2D" uid="uid://bup48vmj2yd8q" path="res://external_ressources/textures/dry_riverbed_01/dry_riverbed_rock_nor_gl_1k.jpg" id="11_085bi"]
+[ext_resource type="Texture2D" uid="uid://i74nl4bcj7ly" path="res://external_ressources/textures/dry_riverbed_01/dry_riverbed_rock_ao_1k.jpg" id="12_1c4xv"]
+[ext_resource type="Texture2D" uid="uid://c5yyb0vp0h5kx" path="res://external_ressources/textures/dry_riverbed_01/dry_riverbed_rock_disp_1k.jpg" id="13_16jfu"]
+[ext_resource type="Texture2D" uid="uid://dkgq8elnuuhsw" path="res://external_ressources/textures/dry_riverbed_01/dry_riverbed_rock_rough_1k.jpg" id="14_tkckr"]
+[ext_resource type="Material" uid="uid://bmiex4k5ntlbu" path="res://external_ressources/textures/dry_riverbed_01/mat.tres" id="15_2tg1w"]
+[ext_resource type="Texture2D" uid="uid://dc41t7g6ftgf0" path="res://external_ressources/textures/water/water 0340normal.jpg" id="16_uh1ql"]
+
+[sub_resource type="Shader" id="Shader_s54ib"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.3.stable's StandardMaterial3D.
+
+shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx;
+
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform float point_size : hint_range(0.1, 128.0, 0.1);
+
+uniform float roughness : hint_range(0.0, 1.0);
+uniform sampler2D texture_metallic : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform vec4 metallic_texture_channel;
+uniform sampler2D texture_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+
+uniform float specular : hint_range(0.0, 1.0, 0.01);
+uniform float metallic : hint_range(0.0, 1.0, 0.01);
+
+uniform sampler2D texture_emission : source_color, hint_default_black, filter_linear_mipmap, repeat_enable;
+uniform vec4 emission : source_color;
+uniform float emission_energy : hint_range(0.0, 100.0, 0.01);
+
+uniform sampler2D texture_normal : hint_roughness_normal, filter_linear_mipmap, repeat_enable;
+uniform float normal_scale : hint_range(-16.0, 16.0);
+
+uniform sampler2D texture_heightmap : hint_default_black, filter_linear_mipmap, repeat_enable;
+uniform float heightmap_scale : hint_range(-16.0, 16.0, 0.001);
+uniform int heightmap_min_layers : hint_range(1, 64);
+uniform int heightmap_max_layers : hint_range(1, 64);
+uniform vec2 heightmap_flip;
+
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+void vertex() {
+	UV = UV * uv1_scale.xy + uv1_offset.xy;
+}
+
+void fragment() {
+	vec2 base_uv = UV;
+
+	vec4 albedo_tex = texture(texture_albedo, base_uv + TIME*0.05);
+	ALBEDO = albedo.rgb * albedo_tex.rgb ;
+
+	float metallic_tex = dot(texture(texture_metallic, base_uv+ TIME*0.05), metallic_texture_channel);
+	METALLIC = metallic_tex * metallic;
+	SPECULAR = specular;
+
+	vec4 roughness_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
+	float roughness_tex = dot(texture(texture_roughness, base_uv), roughness_texture_channel);
+	ROUGHNESS = roughness_tex * roughness;
+
+	// Normal Map: Enabled
+	NORMAL_MAP = texture(texture_normal, base_uv+ TIME*0.05).rgb;
+	NORMAL_MAP_DEPTH = normal_scale;
+
+	// Emission: Enabled
+	vec3 emission_tex = texture(texture_emission, base_uv+ NORMAL_MAP.x*0.1).rgb;
+	// Emission Operator: Add
+	EMISSION = (emission.rgb + emission_tex) * emission_energy;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_6l5vj"]
+frequency = 0.0167
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_0t7ga"]
+noise = SubResource("FastNoiseLite_6l5vj")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nwxqx"]
+render_priority = 0
+shader = SubResource("Shader_s54ib")
+shader_parameter/albedo = Color(1, 0, 0.29652, 1)
+shader_parameter/point_size = 0.1
+shader_parameter/roughness = 1.0
+shader_parameter/metallic_texture_channel = Vector4(-0.275, -4.015, 13.13, 0)
+shader_parameter/specular = 0.0
+shader_parameter/metallic = 0.69
+shader_parameter/emission = Color(1, 0.589002, 0, 1)
+shader_parameter/emission_energy = 0.12
+shader_parameter/normal_scale = 16.0
+shader_parameter/heightmap_scale = 16.0
+shader_parameter/heightmap_min_layers = 4
+shader_parameter/heightmap_max_layers = 5
+shader_parameter/heightmap_flip = Vector2(1, 1)
+shader_parameter/uv1_scale = Vector3(0.89, 1.425, 1)
+shader_parameter/uv1_offset = Vector3(0.575, 0, 0)
+shader_parameter/uv2_scale = Vector3(0.68, 1, 1)
+shader_parameter/uv2_offset = Vector3(0.72, 0, 0)
+shader_parameter/texture_albedo = ExtResource("16_uh1ql")
+shader_parameter/texture_metallic = ExtResource("3_558t6")
+shader_parameter/texture_roughness = ExtResource("5_3oxn4")
+shader_parameter/texture_emission = ExtResource("2_lsw7k")
+shader_parameter/texture_normal = ExtResource("4_4wbti")
+shader_parameter/texture_heightmap = SubResource("NoiseTexture2D_0t7ga")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_mbvqk"]
+material = SubResource("ShaderMaterial_nwxqx")
+size = Vector2(200, 200)
+subdivide_width = 10
+subdivide_depth = 10
+
+[sub_resource type="Shader" id="Shader_sxrsd"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.3.stable's StandardMaterial3D.
+
+shader_type spatial;
+render_mode blend_mix, depth_draw_always, cull_back, diffuse_burley, specular_schlick_ggx;
+
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform float point_size : hint_range(0.1, 128.0, 0.1);
+
+uniform float roughness : hint_range(0.0, 1.0);
+uniform sampler2D texture_metallic : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform vec4 metallic_texture_channel;
+uniform sampler2D texture_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+
+uniform float specular : hint_range(0.0, 1.0, 0.01);
+uniform float metallic : hint_range(0.0, 1.0, 0.01);
+
+uniform sampler2D texture_emission : source_color, hint_default_black, filter_linear_mipmap, repeat_enable;
+uniform vec4 emission : source_color;
+uniform float emission_energy : hint_range(0.0, 100.0, 0.01);
+
+uniform sampler2D texture_refraction : filter_linear_mipmap, repeat_enable;
+uniform float refraction : hint_range(-1.0, 1.0, 0.001);
+uniform vec4 refraction_texture_channel;
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;
+
+uniform sampler2D texture_normal : hint_roughness_normal, filter_linear_mipmap, repeat_enable;
+uniform float normal_scale : hint_range(-16.0, 16.0);
+
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+void vertex() {
+	UV = UV * uv1_scale.xy + uv1_offset.xy;
+}
+
+void fragment() {
+	vec2 base_uv = vec2(UV.x, UV.y+TIME*0.1);
+
+	vec4 albedo_tex = texture(texture_albedo, base_uv);
+	ALBEDO = albedo.rgb * albedo_tex.rgb;
+
+	float metallic_tex = dot(texture(texture_metallic, base_uv), metallic_texture_channel);
+	METALLIC = metallic_tex * metallic;
+	SPECULAR = specular;
+
+	vec4 roughness_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
+	float roughness_tex = dot(texture(texture_roughness, base_uv), roughness_texture_channel);
+	ROUGHNESS = roughness_tex * roughness;
+
+	// Normal Map: Enabled
+	NORMAL_MAP = texture(texture_normal, base_uv).rgb;
+	NORMAL_MAP_DEPTH = normal_scale;
+
+	// Emission: Enabled
+	vec3 emission_tex = texture(texture_emission, base_uv).rgb;
+	// Emission Operator: Add
+	EMISSION = (emission.rgb + emission_tex) * emission_energy;
+
+	// Refraction: Enabled (with normal map texture)
+	vec3 unpacked_normal = NORMAL_MAP;
+	unpacked_normal.xy = unpacked_normal.xy * 2.0 - 1.0;
+	unpacked_normal.z = sqrt(max(0.0, 1.0 - dot(unpacked_normal.xy, unpacked_normal.xy)));
+	vec3 ref_normal = normalize(mix(
+			NORMAL,
+			TANGENT * unpacked_normal.x + BINORMAL * unpacked_normal.y + NORMAL * unpacked_normal.z,
+			NORMAL_MAP_DEPTH));
+	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(texture(texture_refraction, base_uv), refraction_texture_channel) * refraction;
+
+	float ref_amount = 1.0 - albedo.a * albedo_tex.a;
+	EMISSION += textureLod(screen_texture, ref_ofs, ROUGHNESS * 8.0).rgb * ref_amount * EXPOSURE * albedo_tex.r;
+	ALBEDO *= 1.0 - ref_amount;
+	// Force transparency on the material (required for refraction).
+	ALPHA = 1.0;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ayq6t"]
+render_priority = 0
+shader = SubResource("Shader_sxrsd")
+shader_parameter/albedo = Color(0, 0, 0, 0)
+shader_parameter/point_size = 1.0
+shader_parameter/roughness = 0.163
+shader_parameter/metallic_texture_channel = null
+shader_parameter/specular = 1.0
+shader_parameter/metallic = 0.0
+shader_parameter/emission = Color(0.701961, 0.596078, 1, 1)
+shader_parameter/emission_energy = 0.1
+shader_parameter/refraction = 0.05
+shader_parameter/refraction_texture_channel = null
+shader_parameter/normal_scale = 1.482
+shader_parameter/uv1_scale = Vector3(1.315, 0.52, 0.18)
+shader_parameter/uv1_offset = Vector3(0, 0, 0)
+shader_parameter/uv2_scale = Vector3(1, 1, 1)
+shader_parameter/uv2_offset = Vector3(0, 0, 0)
+shader_parameter/texture_albedo = ExtResource("6_uy2n4")
+shader_parameter/texture_metallic = ExtResource("7_grqso")
+shader_parameter/texture_roughness = ExtResource("9_i2tmc")
+shader_parameter/texture_normal = ExtResource("8_peor8")
+
+[sub_resource type="BoxMesh" id="BoxMesh_g7syp"]
+material = SubResource("ShaderMaterial_ayq6t")
+size = Vector3(10.295, 0.1, 138.675)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_2ov4o"]
+frequency = 0.0055
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_b3yha"]
+seamless = true
+noise = SubResource("FastNoiseLite_2ov4o")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yplov"]
+albedo_texture = ExtResource("6_uy2n4")
+metallic = 0.6
+metallic_texture = ExtResource("7_grqso")
+roughness_texture = ExtResource("9_i2tmc")
+normal_enabled = true
+normal_texture = ExtResource("8_peor8")
+detail_enabled = true
+detail_mask = SubResource("NoiseTexture2D_b3yha")
+detail_albedo = ExtResource("10_dubw8")
+detail_normal = ExtResource("11_085bi")
+uv1_scale = Vector3(5, 5, 5)
+uv1_offset = Vector3(-1.795, 0.575, 0)
+uv1_triplanar_sharpness = 0.287175
+uv1_world_triplanar = true
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_p2us8"]
+material = SubResource("StandardMaterial3D_yplov")
+top_radius = 50.0
+bottom_radius = 19.444
+height = 18.856
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5a7pc"]
+albedo_texture = ExtResource("6_uy2n4")
+metallic = 0.5
+metallic_specular = 1.0
+metallic_texture = ExtResource("7_grqso")
+roughness = 0.83
+roughness_texture = ExtResource("14_tkckr")
+normal_scale = -0.16
+normal_texture = ExtResource("11_085bi")
+ao_texture = ExtResource("12_1c4xv")
+heightmap_scale = 0.0
+heightmap_texture = ExtResource("13_16jfu")
+subsurf_scatter_enabled = true
+uv1_scale = Vector3(0.13, 0.13, 0.13)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 0.258817
+uv1_world_triplanar = true
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_5p55o"]
+material = SubResource("StandardMaterial3D_5a7pc")
+top_radius = 50.0
+bottom_radius = 50.0
+height = 1.0
+rings = 0
+
+[sub_resource type="TorusMesh" id="TorusMesh_ettfm"]
+material = ExtResource("15_2tg1w")
+inner_radius = 31.815
+outer_radius = 55.55
+ring_segments = 3
+
+[sub_resource type="Shader" id="Shader_pw57a"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.3.stable's StandardMaterial3D.
+
+shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx;
+
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform float point_size : hint_range(0.1, 128.0, 0.1);
+
+uniform float roughness : hint_range(0.0, 1.0);
+uniform sampler2D texture_metallic : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform vec4 metallic_texture_channel;
+uniform sampler2D texture_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+
+uniform float specular : hint_range(0.0, 1.0, 0.01);
+uniform float metallic : hint_range(0.0, 1.0, 0.01);
+
+uniform sampler2D texture_normal : hint_roughness_normal, filter_linear_mipmap, repeat_enable;
+uniform float normal_scale : hint_range(-16.0, 16.0);
+
+uniform sampler2D texture_detail_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D texture_detail_normal : hint_normal, filter_linear_mipmap, repeat_enable;
+uniform sampler2D texture_detail_mask : hint_default_white, filter_linear_mipmap, repeat_enable;
+
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+void vertex() {
+	vec2 cell_coords = (MODEL_MATRIX * vec4(VERTEX, 1)).xz;
+	UV = UV * uv1_scale.xy + uv1_offset.xy + cell_coords * 0.05 ;
+}
+
+void fragment() {
+	vec2 base_uv = UV;
+
+	vec4 albedo_tex = texture(texture_albedo, base_uv);
+	ALBEDO = albedo.rgb * albedo_tex.rgb;
+
+	float metallic_tex = dot(texture(texture_metallic, base_uv), metallic_texture_channel);
+	METALLIC = metallic_tex * metallic;
+	SPECULAR = specular;
+
+	vec4 roughness_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
+	float roughness_tex = dot(texture(texture_roughness, base_uv), roughness_texture_channel);
+	ROUGHNESS = roughness_tex * roughness;
+
+	// Normal Map: Enabled
+	NORMAL_MAP = texture(texture_normal, base_uv).rgb;
+	NORMAL_MAP_DEPTH = normal_scale;
+
+	// Detail: Enabled
+	vec4 detail_tex = texture(texture_detail_albedo, base_uv);
+	vec4 detail_norm_tex = texture(texture_detail_normal, base_uv);
+	vec4 detail_mask_tex = texture(texture_detail_mask, base_uv);
+
+	// Detail Blend Mode: Mix
+	vec3 detail = mix(ALBEDO.rgb, detail_tex.rgb, detail_tex.a);
+	vec3 detail_norm = mix(NORMAL_MAP, detail_norm_tex.rgb, detail_tex.a);
+	NORMAL_MAP = mix(NORMAL_MAP, detail_norm, detail_mask_tex.r);
+	ALBEDO.rgb = mix(ALBEDO.rgb, detail, detail_mask_tex.r);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qe2bq"]
+render_priority = 0
+shader = SubResource("Shader_pw57a")
+shader_parameter/albedo = Color(1, 1, 1, 1)
+shader_parameter/point_size = 1.0
+shader_parameter/roughness = 0.54
+shader_parameter/metallic_texture_channel = null
+shader_parameter/specular = 1.0
+shader_parameter/metallic = 0.54
+shader_parameter/normal_scale = 0.348001
+shader_parameter/uv1_scale = Vector3(-0.565, 3.95, 1)
+shader_parameter/uv1_offset = Vector3(-1.955, 0.575, 0)
+shader_parameter/uv2_scale = Vector3(1, 1, 1)
+shader_parameter/uv2_offset = Vector3(0, 0, 0)
+shader_parameter/texture_albedo = ExtResource("6_uy2n4")
+shader_parameter/texture_metallic = ExtResource("7_grqso")
+shader_parameter/texture_roughness = ExtResource("9_i2tmc")
+shader_parameter/texture_normal = ExtResource("8_peor8")
+shader_parameter/texture_detail_albedo = ExtResource("10_dubw8")
+shader_parameter/texture_detail_normal = ExtResource("11_085bi")
+shader_parameter/texture_detail_mask = SubResource("NoiseTexture2D_b3yha")
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_7bkl1"]
+material = SubResource("ShaderMaterial_qe2bq")
+top_radius = 1.0
+bottom_radius = 1.0
+height = 25.0
+radial_segments = 8
+rings = 0
+
+[sub_resource type="Shader" id="Shader_suu8f"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.3.stable's StandardMaterial3D.
+
+shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx, shadows_disabled;
+
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform float point_size : hint_range(0.1, 128.0, 0.1);
+
+uniform float roughness : hint_range(0.0, 1.0);
+uniform sampler2D texture_metallic : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform vec4 metallic_texture_channel;
+uniform sampler2D texture_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+
+uniform float specular : hint_range(0.0, 1.0, 0.01);
+uniform float metallic : hint_range(0.0, 1.0, 0.01);
+
+uniform sampler2D texture_emission : source_color, hint_default_black, filter_linear_mipmap, repeat_enable;
+uniform vec4 emission : source_color;
+uniform float emission_energy : hint_range(0.0, 100.0, 0.01);
+
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+void vertex() {
+	UV = UV * uv1_scale.xy + uv1_offset.xy;
+}
+
+void fragment() {
+	vec2 base_uv = UV;
+	base_uv.y += TIME * 2.;
+	base_uv.x += TIME ;
+
+	vec4 albedo_tex = texture(texture_albedo, base_uv);
+	vec4 albedo_tex_2 = texture(texture_albedo, -base_uv);
+	ALBEDO = albedo.rgb * albedo_tex.rgb + albedo_tex_2.rgb * albedo.rgb * 20.0;
+
+	float metallic_tex = dot(texture(texture_metallic, base_uv), metallic_texture_channel);
+	METALLIC = metallic_tex * metallic;
+	SPECULAR = specular;
+
+	vec4 roughness_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
+	float roughness_tex = dot(texture(texture_roughness, base_uv), roughness_texture_channel);
+	ROUGHNESS = roughness_tex * roughness;
+
+	// Emission: Enabled
+	vec3 emission_tex = texture(texture_emission, base_uv-TIME*1.2).rgb;
+	emission_tex.g *= 0.1;
+	emission_tex.b *= 0.1;
+	// Emission Operator: Add
+	EMISSION = ALBEDO.r * emission_tex * emission_energy * 0.1;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_6gb2a"]
+noise_type = 4
+frequency = 0.0202
+fractal_type = 3
+fractal_octaves = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_8c6m5"]
+generate_mipmaps = false
+seamless = true
+seamless_blend_skirt = 0.76
+normalize = false
+noise = SubResource("FastNoiseLite_6gb2a")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_x28ra"]
+noise_type = 0
+frequency = 0.0079
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_snlov"]
+noise = SubResource("FastNoiseLite_x28ra")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_id5cw"]
+render_priority = 0
+shader = SubResource("Shader_suu8f")
+shader_parameter/albedo = Color(1, 0.550042, 0.234455, 1)
+shader_parameter/point_size = 0.1
+shader_parameter/roughness = 1.0
+shader_parameter/metallic_texture_channel = null
+shader_parameter/specular = 1.0
+shader_parameter/metallic = 1.0
+shader_parameter/emission = Color(1, 0.143471, 0.354702, 1)
+shader_parameter/emission_energy = 0.99
+shader_parameter/uv1_scale = Vector3(-0.565, 1.8, 1)
+shader_parameter/uv1_offset = Vector3(2.045, 0, 0)
+shader_parameter/uv2_scale = Vector3(0.84, 1, 1)
+shader_parameter/uv2_offset = Vector3(-2.075, 0, 0)
+shader_parameter/texture_albedo = SubResource("NoiseTexture2D_8c6m5")
+shader_parameter/texture_metallic = ExtResource("16_uh1ql")
+shader_parameter/texture_roughness = SubResource("NoiseTexture2D_snlov")
+shader_parameter/texture_emission = SubResource("NoiseTexture2D_8c6m5")
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_nteew"]
+material = SubResource("ShaderMaterial_id5cw")
+top_radius = 4.204
+bottom_radius = 1.426
+height = 223.74
+radial_segments = 8
+rings = 0
+cap_top = false
+cap_bottom = false
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_m8toe"]
+albedo_texture = ExtResource("6_uy2n4")
+metallic = 0.6
+metallic_texture = ExtResource("7_grqso")
+roughness_texture = ExtResource("9_i2tmc")
+normal_enabled = true
+normal_texture = ExtResource("8_peor8")
+uv1_scale = Vector3(10.995, -0.765, -0.015)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5bud7"]
+material = SubResource("StandardMaterial3D_m8toe")
+size = Vector3(15, 4.21, 9.465)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vs8mk"]
+albedo_texture = ExtResource("6_uy2n4")
+metallic = 0.6
+metallic_texture = ExtResource("7_grqso")
+roughness_texture = ExtResource("9_i2tmc")
+normal_enabled = true
+normal_texture = ExtResource("8_peor8")
+uv1_scale = Vector3(1.445, -0.765, -0.015)
+
+[sub_resource type="BoxMesh" id="BoxMesh_n81lc"]
+material = SubResource("StandardMaterial3D_vs8mk")
+size = Vector3(15, 3.18, 9.465)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2gupt"]
+albedo_color = Color(0, 0.0551876, 0.4375, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7jrun"]
+material = SubResource("StandardMaterial3D_2gupt")
+size = Vector3(3.765, 25, 8.24)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_humgs"]
+height = 0.434
+radius = 50.0
+
+[node name="Temple" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 66.8207, 0)
+
+[node name="Water2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -900.588, 144.788, -156.531)
+mesh = SubResource("PlaneMesh_mbvqk")
+skeleton = NodePath("../../Terrain3D")
+
+[node name="rampe" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, -0.211325, 0.977416, 0, 0.977416, 0.211325, -1, 9.2373e-09, -4.27242e-08, -1017.24, 365.007, -158.761)
+mesh = SubResource("BoxMesh_g7syp")
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.581371, 0, 0.813639, 0, 1, 0, -0.813639, 0, -0.581371, -911.073, 371.005, -157.657)
+mesh = SubResource("CylinderMesh_p2us8")
+
+[node name="MeshInstance3D7" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.581371, 0, 0.813639, 0, 1, 0, -0.813639, 0, -0.581371, -911.073, 379.974, -157.657)
+mesh = SubResource("CylinderMesh_5p55o")
+
+[node name="MeshInstance3D8" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.581371, 0, 0.813639, 0, 0.135, 0, -0.813639, 0, -0.581371, -911.902, 404.035, -159.068)
+mesh = SubResource("TorusMesh_ettfm")
+
+[node name="Pilar" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.628602, 0, 0.777728, 0, 1, 0, -0.777728, 0, -0.628602, -913.823, 392.371, -204.378)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar2" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.628602, 0, 0.777728, 0, 1, 0, -0.777728, 0, -0.628602, -920.542, 392.371, -202.92)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar3" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.773255, 0, 0.634096, 0, 1, 0, -0.634096, 0, -0.773255, -926.494, 392.371, -201.227)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar4" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.773255, 0, 0.634096, 0, 1, 0, -0.634096, 0, -0.773255, -932.779, 392.371, -198.437)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar5" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.912984, 0, 0.407996, 0, 1, 0, -0.407996, 0, -0.912984, -937.105, 392.371, -195.457)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar6" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.912984, 0, 0.407996, 0, 1, 0, -0.407996, 0, -0.912984, -942.432, 392.371, -191.109)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar7" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.976751, 0, 0.214377, 0, 1, 0, -0.214377, 0, -0.976751, -946.969, 392.371, -186.901)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar8" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.976751, 0, 0.214377, 0, 1, 0, -0.214377, 0, -0.976751, -951.304, 392.371, -181.564)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar9" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.978552, 0, -0.206, 0, 1, 0, 0.206, 0, -0.978552, -953.445, 392.371, -174.2)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar10" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.978552, 0, -0.206, 0, 1, 0, 0.206, 0, -0.978552, -955.211, 392.371, -167.688)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar13" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.778659, 0, -0.627447, 0, 1, 0, 0.627447, 0, -0.778659, -956.125, 392.371, -149.963)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar14" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.778659, 0, -0.627447, 0, 1, 0, 0.627447, 0, -0.778659, -954.693, 392.371, -143.519)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar15" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.635243, 0, -0.772313, 0, 1, 0, 0.772313, 0, -0.635243, -953.009, 392.371, -137.565)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar16" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.635243, 0, -0.772313, 0, 1, 0, 0.772313, 0, -0.635243, -949.84, 392.371, -133.046)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar35" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.306725, 0, -0.951798, 0, 1, 0, 0.951798, 0, -0.306725, -946.282, 392.371, -129.484)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar36" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.306725, 0, -0.951798, 0, 1, 0, 0.951798, 0, -0.306725, -941.384, 392.371, -124.659)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar37" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.864705, 0, -0.50228, 0, 1, 0, 0.50228, 0, 0.864705, -937.026, 392.371, -120.966)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar38" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.0451534, 0, -0.99898, 0, 1, 0, 0.99898, 0, -0.0451534, -931.029, 392.371, -118.361)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar39" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.158365, 0, -0.987381, 0, 1, 0, 0.987381, 0, 0.158365, -925.452, 392.371, -115.682)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar40" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.158365, 0, -0.987381, 0, 1, 0, 0.987381, 0, 0.158365, -918.897, 392.371, -113.603)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar41" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.550175, 0, -0.83505, 0, 1, 0, 0.83505, 0, 0.550175, -912.018, 392.371, -113.958)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar42" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.550175, 0, -0.83505, 0, 1, 0, 0.83505, 0, 0.550175, -905.189, 392.371, -114.757)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar43" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.708081, 0, -0.706131, 0, 1, 0, 0.706131, 0, 0.708081, -899.101, 392.371, -115.864)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar44" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.708081, 0, -0.706131, 0, 1, 0, 0.706131, 0, 0.708081, -893.097, 392.371, -117.706)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar45" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.86909, 0, -0.494655, 0, 1, 0, 0.494655, 0, 0.86909, -887.35, 392.371, -119.605)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar46" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.86909, 0, -0.494655, 0, 1, 0, 0.494655, 0, 0.86909, -880.655, 392.371, -123.256)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar47" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.951342, 0, -0.308137, 0, 1, 0, 0.308137, 0, 0.951342, -875.215, 391.584, -128.261)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar18" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.999665, 0, -0.0258975, 0, 1, 0, 0.0258975, 0, 0.999665, -871.367, 392.371, -134.858)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar19" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.984146, 0, 0.17736, 0, 1, 0, -0.17736, 0, 0.984146, -868.795, 392.371, -140.486)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar20" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.984146, 0, 0.17736, 0, 1, 0, -0.17736, 0, 0.984146, -866.844, 392.371, -147.079)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar21" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.902661, 0, 0.430354, 0, 1, 0, -0.430354, 0, 0.902661, -866.306, 392.371, -152.305)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar22" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.902661, 0, 0.430354, 0, 1, 0, -0.430354, 0, 0.902661, -866.16, 392.371, -159.179)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar23" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.796635, 0, 0.60446, 0, 1, 0, -0.60446, 0, 0.796635, -866.421, 392.371, -165.362)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar24" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.796635, 0, 0.60446, 0, 1, 0, -0.60446, 0, 0.796635, -867.673, 392.371, -172.123)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar25" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.477818, 0, 0.878459, 0, 1, 0, -0.878459, 0, 0.477818, -871.223, 392.371, -178.026)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar26" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.477818, 0, 0.878459, 0, 1, 0, -0.878459, 0, 0.477818, -875.143, 392.371, -183.675)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar27" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.28975, 0, 0.957103, 0, 1, 0, -0.957103, 0, 0.28975, -878.985, 392.371, -188.526)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar28" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.28975, 0, 0.957103, 0, 1, 0, -0.957103, 0, 0.28975, -883.969, 392.371, -193.263)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar29" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.0273805, 0, 0.999625, 0, 1, 0, -0.999625, 0, 0.0273805, -888.378, 392.371, -196.119)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar30" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.0273805, 0, 0.999625, 0, 1, 0, -0.999625, 0, 0.0273805, -894.434, 392.371, -199.376)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar31" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.1759, 0, 0.984408, 0, 1, 0, -0.984408, 0, -0.1759, -900.058, 392.371, -201.956)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="Pilar32" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.1759, 0, 0.984408, 0, 1, 0, -0.984408, 0, -0.1759, -906.648, 392.371, -203.917)
+mesh = SubResource("CylinderMesh_7bkl1")
+
+[node name="beam" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, -911.073, 252.334, -157.657)
+mesh = SubResource("CylinderMesh_nteew")
+
+[node name="MeshInstance3D10" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -961.427, 376.846, -158.707)
+mesh = SubResource("BoxMesh_5bud7")
+skeleton = NodePath("../beam")
+
+[node name="MeshInstance3D13" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -959.566, 377.363, -158.658)
+mesh = SubResource("BoxMesh_5bud7")
+skeleton = NodePath("../beam")
+
+[node name="MeshInstance3D14" type="MeshInstance3D" parent="."]
+transform = Transform3D(4.37114e-08, 8.74228e-08, 1, -1.50996e-07, -1, 8.74228e-08, 1, -1.50996e-07, -4.37114e-08, -957.788, 377.879, -158.597)
+mesh = SubResource("BoxMesh_5bud7")
+skeleton = NodePath("../beam")
+
+[node name="MeshInstance3D15" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.0391378, 0, 0.999234, 0, 1, 0, -0.999234, 0, -0.0391378, -1085.08, 350.915, -158.15)
+mesh = SubResource("BoxMesh_5bud7")
+skeleton = NodePath("../beam")
+
+[node name="MeshInstance3D16" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.0391378, 0, 0.999234, 0, 1, 0, -0.999234, 0, -0.0391378, -1083.48, 351.232, -158.305)
+mesh = SubResource("BoxMesh_5bud7")
+skeleton = NodePath("../beam")
+
+[node name="MeshInstance3D17" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.0391378, 8.39343e-08, 0.999234, -8.74228e-08, -1, 8.74228e-08, 0.999234, -9.07774e-08, -0.0391378, -1081.56, 352.323, -158.419)
+mesh = SubResource("BoxMesh_n81lc")
+skeleton = NodePath("../beam")
+
+[node name="MeshInstance3D11" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.0440379, 0, 0.99903, 0, 1, 0, -0.99903, 0, 0.0440379, -912.01, 392.763, -165.339)
+mesh = SubResource("BoxMesh_7jrun")
+skeleton = NodePath("../beam")
+
+[node name="MeshInstance3D12" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.0440379, 0, 0.99903, 0, 1, 0, -0.99903, 0, 0.0440379, -912.53, 392.763, -151.245)
+mesh = SubResource("BoxMesh_7jrun")
+skeleton = NodePath("../beam")
+
+[node name="SpotLight3D" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -910.7, 303.739, -155.541)
+light_color = Color(1, 0, 0.262128, 1)
+light_energy = 16.0
+light_volumetric_fog_energy = 16.0
+light_specular = 0.0
+spot_range = 751.032
+spot_attenuation = 0.43
+spot_angle = 19.2672
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(-1, -8.74228e-08, -4.37114e-08, 4.37114e-08, 1.91069e-15, -1, 8.74228e-08, -1, 1.91069e-15, -910.7, 216.585, -155.541)
+light_color = Color(1, 0.656426, 0, 1)
+light_energy = 16.0
+light_indirect_energy = 16.0
+light_volumetric_fog_energy = 16.0
+light_specular = 0.0
+omni_range = 227.197
+omni_attenuation = 0.878
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -910.7, 380.533, -155.541)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 1.67037e-22, 0, 1, 0, 1.67037e-22, 0, 1, -0.261719, 0, -2.22627)
+shape = SubResource("CylinderShape3D_humgs")
+
+[node name="SpotLight3D2" type="SpotLight3D" parent="."]
+transform = Transform3D(-1, -8.74228e-08, -4.37114e-08, 4.37114e-08, 1.91069e-15, -1, 8.74228e-08, -1, 1.91069e-15, -910.7, 109.699, -155.541)
+light_color = Color(1, 0, 0.262128, 1)
+light_energy = 1.472
+light_indirect_energy = 16.0
+light_volumetric_fog_energy = 16.0
+light_specular = 0.0
+spot_range = 278.858
+spot_attenuation = -0.14
+spot_angle = 48.4071
+spot_angle_attenuation = 0.052556

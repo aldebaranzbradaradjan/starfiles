@@ -1,13 +1,14 @@
-[gd_scene load_steps=39 format=3 uid="uid://h2pxte8ho7nv"]
+[gd_scene load_steps=40 format=3 uid="uid://h2pxte8ho7nv"]
 
 [ext_resource type="PackedScene" uid="uid://gj3xwsg2cpmo" path="res://external_ressources/maps/zur_desert_temple.glb" id="1_5co2l"]
 [ext_resource type="LightmapGIData" uid="uid://clgafom8j0a4y" path="res://ressources/maps/Zur/lightmap/zur_desert_temple.lmbake" id="2_8fm1l"]
 [ext_resource type="PackedScene" uid="uid://cwco04c3urjpy" path="res://ressources/environments/env_1.tscn" id="4_pxknk"]
 [ext_resource type="PackedScene" uid="uid://dj3eloo0v8rss" path="res://ressources/player/tps_fps_controller_3d.tscn" id="5_vt7hh"]
-[ext_resource type="Shader" path="res://ressources/sky/sky_shader/sky.gdshader" id="5_wbylx"]
+[ext_resource type="Shader" uid="uid://dejvybnipl1n8" path="res://ressources/sky/sky_shader/sky.gdshader" id="5_wbylx"]
 [ext_resource type="Texture2D" uid="uid://bubfm8k6u7uki" path="res://external_ressources/textures/desert_sand/ground_0024_color_1k.jpg" id="6_orfyq"]
-[ext_resource type="Shader" path="res://ressources/fog/atmosphere_fog_shader/atmosphere_fog_shader.gdshader" id="6_u0y5u"]
+[ext_resource type="Shader" uid="uid://d0irk2eg7j73l" path="res://ressources/fog/atmosphere_fog_shader/atmosphere_fog_shader.gdshader" id="6_u0y5u"]
 [ext_resource type="PackedScene" uid="uid://dw3g6o6a1pgby" path="res://external_ressources/models/grass_25D.glb" id="7_2gac5"]
+[ext_resource type="PackedScene" uid="uid://ds8yv5eadby6c" path="res://ressources/grass/grass_01.tscn" id="7_g6qli"]
 [ext_resource type="Texture2D" uid="uid://6hq038py1n7t" path="res://external_ressources/textures/desert_sand/ground_0024_normal_opengl_1k.png" id="7_l6noj"]
 [ext_resource type="PackedScene" uid="uid://o3nh71h1l7sv" path="res://addons/gd_planar_reflections/planar_reflection.tscn" id="9_cjoqw"]
 [ext_resource type="Material" uid="uid://c4p4jr823j1gw" path="res://addons/gd_planar_reflections/ReflectionMaterial.tres" id="10_oj5e7"]
@@ -35,6 +36,11 @@ load_path = "res://.godot/imported/starfield.png-e581183287853b33485a577c88bf724
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bw387"]
 shader = ExtResource("5_wbylx")
+shader_parameter/star_sky = SubResource("CompressedTexture2D_oirou")
+shader_parameter/moon = SubResource("CompressedTexture2D_0f5jn")
+shader_parameter/cloud_sky_up = SubResource("CompressedTexture2D_jtg3d")
+shader_parameter/cloud_sky_down = SubResource("CompressedTexture2D_sgubm")
+shader_parameter/cloud_sky_2 = SubResource("CompressedTexture2D_x2xwf")
 shader_parameter/sky_color = Color(0, 0.687033, 1, 1)
 shader_parameter/sun_color = Color(0.335848, 0.533409, 0.734375, 1)
 shader_parameter/moon_tint = Color(1, 0.828125, 0.828125, 1)
@@ -44,16 +50,11 @@ shader_parameter/SUN_POS = Vector3(0, 0.334794, 0.942291)
 shader_parameter/MOON_POS = Vector3(0, -0.334794, -0.942291)
 shader_parameter/MOON_TEX_POS = Vector3(0, -0.816944, -0.576717)
 shader_parameter/LIGHTING_POS = Vector3(0, 1, 0)
-shader_parameter/lighting_strength = null
+shader_parameter/lighting_strength = 0.0
 shader_parameter/MOON_PHASE = -1.1
 shader_parameter/moon_size = 0.03
 shader_parameter/attenuation = 1.0
 shader_parameter/clouds_speed = 0.8
-shader_parameter/star_sky = SubResource("CompressedTexture2D_oirou")
-shader_parameter/moon = SubResource("CompressedTexture2D_0f5jn")
-shader_parameter/cloud_sky_up = SubResource("CompressedTexture2D_jtg3d")
-shader_parameter/cloud_sky_down = SubResource("CompressedTexture2D_sgubm")
-shader_parameter/cloud_sky_2 = SubResource("CompressedTexture2D_x2xwf")
 
 [sub_resource type="Sky" id="Sky_6fnt2"]
 sky_material = SubResource("ShaderMaterial_bw387")
@@ -201,14 +202,15 @@ density = 1.66312
 visibility_range = 101.6
 scene_file = ExtResource("7_2gac5")
 
-[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_lnuw2"]
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_yj6ek"]
 name = "ground_0024_color_1k"
 albedo_texture = ExtResource("6_orfyq")
 normal_texture = ExtResource("7_l6noj")
+uv_scale = 0.247
 
 [sub_resource type="Terrain3DAssets" id="Terrain3DAssets_qlmiv"]
 mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_ibsm4"), SubResource("Terrain3DMeshAsset_d8sq8")])
-texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_lnuw2")])
+texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_yj6ek")])
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_38k76"]
 material = ExtResource("10_oj5e7")
@@ -357,6 +359,9 @@ shape = SubResource("BoxShape3D_hhq01")
 transform = Transform3D(1, 0, 0, 0, 0.93358, -0.358368, 0, 0.358368, 0.93358, 3.66775, 0.904807, 73.0174)
 shape = SubResource("BoxShape3D_hhq01")
 
+[node name="MeshInstance3D" parent="StaticBody3D" instance=ExtResource("7_g6qli")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 103.214, 1.19746, 35.6029)
+
 [node name="Terrain3D" type="Terrain3D" parent="."]
 data_directory = "res://ressources/maps/Zur/terrain3d"
 material = SubResource("Terrain3DMaterial_xd648")
@@ -373,3 +378,4 @@ reflection_camera_resolution = Vector2i(320, 180)
 [editable path="zur_desert_temple"]
 [editable path="WorldEnvironment"]
 [editable path="Player"]
+[editable path="StaticBody3D/MeshInstance3D"]

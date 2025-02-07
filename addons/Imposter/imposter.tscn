@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b38wgbw5ey6el"]
 
-[ext_resource type="Script" path="res://addons/Imposter/imposter.gd" id="1_op0f2"]
+[ext_resource type="Script" uid="uid://b457rq5ym6i7w" path="res://addons/Imposter/imposter.gd" id="1_op0f2"]
 
 [node name="imposter" type="PanelContainer"]
 script = ExtResource("1_op0f2")

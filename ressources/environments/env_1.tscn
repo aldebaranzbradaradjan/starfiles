@@ -1,13 +1,13 @@
 [gd_scene load_steps=15 format=3 uid="uid://cwco04c3urjpy"]
 
-[ext_resource type="Shader" path="res://ressources/sky/sky_shader/sky.gdshader" id="1_yt31d"]
+[ext_resource type="Shader" uid="uid://dejvybnipl1n8" path="res://ressources/sky/sky_shader/sky.gdshader" id="1_yt31d"]
 [ext_resource type="Texture2D" uid="uid://c6p3e43f7ytdj" path="res://ressources/sky/cloud_only_sky_3.jpeg" id="2_u4gtl"]
 [ext_resource type="Texture2D" uid="uid://cmutsymaxtebl" path="res://ressources/sky/cloud_only_sky_1.jpeg" id="3_j7l63"]
 [ext_resource type="Texture2D" uid="uid://dccvmggwa2n4" path="res://ressources/sky/cloud_only_sky_2.jpeg" id="4_ju1f2"]
 [ext_resource type="Texture2D" uid="uid://b3yt8t8w4c6qa" path="res://ressources/sky/sky_shader/moon.png" id="5_7hx77"]
 [ext_resource type="Texture2D" uid="uid://di83b1agd0op8" path="res://ressources/sky/sky_shader/starfield.png" id="6_k21x2"]
-[ext_resource type="Script" path="res://ressources/sky/sky_shader/sky.gd" id="7_bf2b3"]
-[ext_resource type="Shader" path="res://ressources/fog/atmosphere_fog_shader/atmosphere_fog_shader.gdshader" id="8_ylvqd"]
+[ext_resource type="Script" uid="uid://bqy6w6eywd353" path="res://ressources/sky/sky_shader/sky.gd" id="7_bf2b3"]
+[ext_resource type="Shader" uid="uid://d0irk2eg7j73l" path="res://ressources/fog/atmosphere_fog_shader/atmosphere_fog_shader.gdshader" id="8_ylvqd"]
 
 [sub_resource type="Gradient" id="Gradient_dblpd"]
 colors = PackedColorArray(0, 0, 0, 1, 1, 0.927972, 0.943013, 1)
@@ -17,6 +17,11 @@ gradient = SubResource("Gradient_dblpd")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1xhr4"]
 shader = ExtResource("1_yt31d")
+shader_parameter/star_sky = ExtResource("6_k21x2")
+shader_parameter/moon = ExtResource("5_7hx77")
+shader_parameter/cloud_sky_up = ExtResource("4_ju1f2")
+shader_parameter/cloud_sky_down = ExtResource("3_j7l63")
+shader_parameter/cloud_sky_2 = ExtResource("2_u4gtl")
 shader_parameter/sky_color = Color(0.227865, 0.392502, 0.695312, 1)
 shader_parameter/sun_color = Color(0.335848, 0.533409, 0.734375, 1)
 shader_parameter/moon_tint = Color(1, 0.828125, 0.828125, 1)
@@ -26,16 +31,11 @@ shader_parameter/SUN_POS = Vector3(0, 0.624425, 0.781085)
 shader_parameter/MOON_POS = Vector3(0, -0.624425, -0.781085)
 shader_parameter/MOON_TEX_POS = Vector3(0, -0.901228, -0.433345)
 shader_parameter/LIGHTING_POS = Vector3(0, 1, 0)
-shader_parameter/lighting_strength = null
+shader_parameter/lighting_strength = 0.0
 shader_parameter/MOON_PHASE = -1.1
 shader_parameter/moon_size = 0.03
 shader_parameter/attenuation = 0.72
 shader_parameter/clouds_speed = 0.8
-shader_parameter/star_sky = ExtResource("6_k21x2")
-shader_parameter/moon = ExtResource("5_7hx77")
-shader_parameter/cloud_sky_up = ExtResource("4_ju1f2")
-shader_parameter/cloud_sky_down = ExtResource("3_j7l63")
-shader_parameter/cloud_sky_2 = ExtResource("2_u4gtl")
 
 [sub_resource type="Sky" id="Sky_mpsdc"]
 sky_material = SubResource("ShaderMaterial_1xhr4")

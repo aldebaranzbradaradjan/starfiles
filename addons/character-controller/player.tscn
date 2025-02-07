@@ -1,8 +1,6 @@
-[gd_scene load_steps=27 format=4 uid="uid://d1ljdtiu3jlp"]
+[gd_scene load_steps=25 format=4 uid="uid://d1ljdtiu3jlp"]
 
 [ext_resource type="PackedScene" uid="uid://2oxdgu03lnbk" path="res://addons/character-controller/example/main/player.tscn" id="1_m3il2"]
-[ext_resource type="Texture2D" uid="uid://uxabp7b784n" path="res://ressources/textures/Maple_Bark/Maple_Bark_2_COLOR.png" id="2_kqqbb"]
-[ext_resource type="Texture2D" uid="uid://cy6yb8shvijat" path="res://ressources/textures/sand1-bl/sand1-normal-ogl.png" id="3_bftr8"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_eiiy4"]
 margin = 0.0
@@ -21,7 +19,6 @@ auto_exposure_min_sensitivity = 266.66
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kqp75"]
 resource_name = "material_0"
 albedo_color = Color(1, 0.781651, 0.698433, 1)
-albedo_texture = ExtResource("2_kqqbb")
 metallic = 1.0
 metallic_specular = 0.13
 roughness = 0.54
@@ -29,12 +26,10 @@ emission_enabled = true
 emission = Color(0.785156, 0.256886, 0, 1)
 emission_energy_multiplier = 0.02
 normal_scale = 5.9
-normal_texture = ExtResource("3_bftr8")
 heightmap_scale = 5.288
 heightmap_deep_parallax = true
 heightmap_min_layers = 8
 heightmap_max_layers = 32
-heightmap_texture = ExtResource("3_bftr8")
 subsurf_scatter_enabled = true
 subsurf_scatter_strength = 0.05
 subsurf_scatter_skin_mode = true
@@ -2209,11 +2204,11 @@ tracks/52/keys = PackedFloat32Array(0, 1, 0.311507, 0.0736779, -0.0204931, 0.947
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_5pcgc"]
 _data = {
-"BreathingIdle": SubResource("Animation_dksex"),
-"Idle": SubResource("Animation_ughr3"),
-"NeutralIdle": SubResource("Animation_26vew"),
-"SadWalk": SubResource("Animation_iq85f"),
-"SwaggerWalk": SubResource("Animation_5t07o")
+&"BreathingIdle": SubResource("Animation_dksex"),
+&"Idle": SubResource("Animation_ughr3"),
+&"NeutralIdle": SubResource("Animation_26vew"),
+&"SadWalk": SubResource("Animation_iq85f"),
+&"SwaggerWalk": SubResource("Animation_5t07o")
 }
 
 [node name="Player" instance=ExtResource("1_m3il2")]

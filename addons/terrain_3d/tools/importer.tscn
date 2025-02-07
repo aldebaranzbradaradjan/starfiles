@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://blaieaqp413k7"]
 
-[ext_resource type="Script" path="res://addons/terrain_3d/tools/importer.gd" id="1_60b8f"]
+[ext_resource type="Script" uid="uid://bmlx5dxuf102i" path="res://addons/terrain_3d/tools/importer.gd" id="1_60b8f"]
 
 [sub_resource type="Gradient" id="Gradient_mjj6f"]
 offsets = PackedFloat32Array(0.2, 1)

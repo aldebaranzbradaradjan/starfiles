@@ -1,9 +1,9 @@
 [gd_scene load_steps=5 format=3 uid="uid://dj3eloo0v8rss"]
 
 [ext_resource type="PackedScene" uid="uid://8oy3xm2sff8" path="res://addons/character-controller/fps/fps_controller_3d.tscn" id="1_ipnwl"]
-[ext_resource type="Script" path="res://addons/character-controller/example/main/player.gd" id="2_0y477"]
+[ext_resource type="Script" uid="uid://4t5vcb3ravb1" path="res://addons/character-controller/example/main/player.gd" id="2_0y477"]
 [ext_resource type="Environment" uid="uid://b3cn01u84faiy" path="res://addons/character-controller/example/main/underwater.tres" id="3_611k8"]
-[ext_resource type="PackedScene" path="res://addons/character-controller/example/main/audios/player_audios.tscn" id="4_7dfpu"]
+[ext_resource type="PackedScene" uid="uid://b504b6c2hl5ho" path="res://addons/character-controller/example/main/audios/player_audios.tscn" id="4_7dfpu"]
 
 [node name="Player" instance=ExtResource("1_ipnwl")]
 script = ExtResource("2_0y477")

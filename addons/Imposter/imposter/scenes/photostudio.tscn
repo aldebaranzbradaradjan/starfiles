@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://d02enlhi6f0n4"]
 
-[ext_resource type="Script" path="res://addons/Imposter/imposter/scripts/photostudio.gd" id="1_smm2a"]
+[ext_resource type="Script" uid="uid://s5mm20h83eq4" path="res://addons/Imposter/imposter/scripts/photostudio.gd" id="1_smm2a"]
 [ext_resource type="PackedScene" uid="uid://b6601b4wn2mri" path="res://addons/Imposter/imposter/scenes/dilatate.tscn" id="2_dh3a8"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_07wvu"]

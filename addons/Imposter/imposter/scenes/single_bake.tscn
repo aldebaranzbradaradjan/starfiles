@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://cfyj20c0bej3r"]
 
-[ext_resource type="Script" path="res://addons/Imposter/imposter/scripts/single_bake.gd" id="1_0ba82"]
+[ext_resource type="Script" uid="uid://cr3qg573xyoha" path="res://addons/Imposter/imposter/scripts/single_bake.gd" id="1_0ba82"]
 [ext_resource type="Texture2D" uid="uid://dsq0fpt5c8ic7" path="res://addons/Imposter/icons/fold.svg" id="2_uj55j"]
 [ext_resource type="Texture2D" uid="uid://vexri24bb4xr" path="res://addons/Imposter/icons/fold_selected.svg" id="3_lu3jy"]
 

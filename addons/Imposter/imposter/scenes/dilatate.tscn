@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://b6601b4wn2mri"]
 
-[ext_resource type="Script" path="res://addons/Imposter/imposter/scripts/dilatate.gd" id="1_isphw"]
+[ext_resource type="Script" uid="uid://cvu6ovxhx5s0m" path="res://addons/Imposter/imposter/scripts/dilatate.gd" id="1_isphw"]
 
 [sub_resource type="Shader" id="Shader_o6sob"]
 code = "shader_type canvas_item;

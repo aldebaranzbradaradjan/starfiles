@@ -27,14 +27,14 @@ shader_parameter/sun_color = Color(0.335848, 0.533409, 0.734375, 1)
 shader_parameter/moon_tint = Color(1, 0.828125, 0.828125, 1)
 shader_parameter/clouds_tint = Color(1, 0.912, 0.843, 1)
 shader_parameter/SCATERRING = false
-shader_parameter/SUN_POS = Vector3(0, 0.624425, 0.781085)
-shader_parameter/MOON_POS = Vector3(0, -0.624425, -0.781085)
-shader_parameter/MOON_TEX_POS = Vector3(0, -0.901228, -0.433345)
+shader_parameter/SUN_POS = Vector3(0, 0.148155, -0.988964)
+shader_parameter/MOON_POS = Vector3(0, -0.148155, 0.988964)
+shader_parameter/MOON_TEX_POS = Vector3(0, -0.757679, 0.652627)
 shader_parameter/LIGHTING_POS = Vector3(0, 1, 0)
 shader_parameter/lighting_strength = 0.0
 shader_parameter/MOON_PHASE = -1.1
 shader_parameter/moon_size = 0.03
-shader_parameter/attenuation = 0.72
+shader_parameter/attenuation = 0.578523
 shader_parameter/clouds_speed = 0.8
 
 [sub_resource type="Sky" id="Sky_mpsdc"]
@@ -46,7 +46,7 @@ sky = SubResource("Sky_mpsdc")
 ambient_light_source = 3
 ambient_light_color = Color(0.8, 0.7296, 0.6744, 0.8)
 ambient_light_sky_contribution = 0.21
-ambient_light_energy = 0.72
+ambient_light_energy = 0.578523
 tonemap_mode = 3
 tonemap_exposure = 0.53
 tonemap_white = 0.37

@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://h2pxte8ho7nv"]
+[gd_scene load_steps=38 format=3 uid="uid://h2pxte8ho7nv"]
 
 [ext_resource type="PackedScene" uid="uid://gj3xwsg2cpmo" path="res://external_ressources/maps/zur_desert_temple.glb" id="1_5co2l"]
 [ext_resource type="LightmapGIData" uid="uid://clgafom8j0a4y" path="res://ressources/maps/Zur/lightmap/zur_desert_temple.lmbake" id="2_8fm1l"]
@@ -7,7 +7,6 @@
 [ext_resource type="Shader" uid="uid://dejvybnipl1n8" path="res://ressources/sky/sky_shader/sky.gdshader" id="5_wbylx"]
 [ext_resource type="Texture2D" uid="uid://bubfm8k6u7uki" path="res://external_ressources/textures/desert_sand/ground_0024_color_1k.jpg" id="6_orfyq"]
 [ext_resource type="Shader" uid="uid://d0irk2eg7j73l" path="res://ressources/fog/atmosphere_fog_shader/atmosphere_fog_shader.gdshader" id="6_u0y5u"]
-[ext_resource type="PackedScene" uid="uid://dw3g6o6a1pgby" path="res://external_ressources/models/grass_25D.glb" id="7_2gac5"]
 [ext_resource type="PackedScene" uid="uid://ds8yv5eadby6c" path="res://ressources/grass/grass_01.tscn" id="7_g6qli"]
 [ext_resource type="Texture2D" uid="uid://6hq038py1n7t" path="res://external_ressources/textures/desert_sand/ground_0024_normal_opengl_1k.png" id="7_l6noj"]
 [ext_resource type="PackedScene" uid="uid://o3nh71h1l7sv" path="res://addons/gd_planar_reflections/planar_reflection.tscn" id="9_cjoqw"]
@@ -195,13 +194,6 @@ density = 10.0
 material_override = SubResource("StandardMaterial3D_gbw33")
 generated_type = 1
 
-[sub_resource type="Terrain3DMeshAsset" id="Terrain3DMeshAsset_d8sq8"]
-name = "grass_25D"
-id = 1
-density = 1.66312
-visibility_range = 101.6
-scene_file = ExtResource("7_2gac5")
-
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_yj6ek"]
 name = "ground_0024_color_1k"
 albedo_texture = ExtResource("6_orfyq")
@@ -209,7 +201,7 @@ normal_texture = ExtResource("7_l6noj")
 uv_scale = 0.247
 
 [sub_resource type="Terrain3DAssets" id="Terrain3DAssets_qlmiv"]
-mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_ibsm4"), SubResource("Terrain3DMeshAsset_d8sq8")])
+mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_ibsm4")])
 texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_yj6ek")])
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_38k76"]

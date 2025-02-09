@@ -15,7 +15,8 @@ frequency = 0.0041
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_sycoq"]
 noise = SubResource("FastNoiseLite_6382g")
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_pexwj"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_ja812"]
+viewport_path = NodePath("PlanarReflection/@SubViewport@105741")
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_hqcwr"]
 seed = 10
@@ -38,17 +39,17 @@ shader_parameter/noise1 = SubResource("NoiseTexture2D_tev7u")
 shader_parameter/noise2 = SubResource("NoiseTexture2D_sycoq")
 shader_parameter/albedo = Color(0.212062, 0.291842, 0.480469, 1)
 shader_parameter/proximity_fade_distance = 0.83
-shader_parameter/roughness = 0.194
-shader_parameter/metallic_texture_channel = Vector4(0, 0, 0, 0)
-shader_parameter/specular = 0.12
-shader_parameter/metallic = 0.0
+shader_parameter/roughness = 0.205
+shader_parameter/metallic_texture_channel = Vector4(0.375, -0.395, 0.73, 0)
+shader_parameter/specular = 0.06
+shader_parameter/metallic = 0.14
 shader_parameter/texture_refraction = SubResource("NoiseTexture2D_ffsgu")
-shader_parameter/refraction = 7.6e-07
+shader_parameter/refraction = 0.0
 shader_parameter/refraction_texture_channel = Vector4(1, 1, 1, 1)
 shader_parameter/texture_normal = SubResource("NoiseTexture2D_ffsgu")
 shader_parameter/texture_normal2 = SubResource("NoiseTexture2D_w63yn")
-shader_parameter/reflection_screen_texture = SubResource("ViewportTexture_pexwj")
-shader_parameter/normal_scale = 0.200001
+shader_parameter/reflection_screen_texture = SubResource("ViewportTexture_ja812")
+shader_parameter/normal_scale = 0.735001
 shader_parameter/normal_uv_mult = 16.0
 shader_parameter/distortion_strength = 0.05
 shader_parameter/uv1_scale = Vector3(20, 20, 20)

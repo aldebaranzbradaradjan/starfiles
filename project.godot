@@ -77,4 +77,4 @@ move_fly_mode={
 [rendering]
 
 scaling_3d/mode=2
-scaling_3d/fsr_sharpness=0.0
+scaling_3d/fsr_sharpness=2.0

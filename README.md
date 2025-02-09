@@ -3,3 +3,6 @@ In 1997, archaeologist Neal D. Johnson's controversial theory about the Ishtar G
 
 ## Apsur
 <img src="./apsur.png">
+
+## Zur
+<img src="./zur.png">

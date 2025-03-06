@@ -3,6 +3,11 @@ class_name PlanarReflector
 
 var materialToSet:ShaderMaterial = load("res://addons/gd_planar_reflections/ReflectionMaterial.tres");
 
+@export var far : int = 100 :
+	set(value):
+		if reflect_camera != null :
+			reflect_camera.far = value
+		
 var reflect_camera : Camera3D
 var reflect_viewport: SubViewport
 @export var oblique_supported: bool = false
@@ -23,6 +28,7 @@ func _ready():
 		reflect_camera.oblique_normal = Vector3.UP;
 	reflect_camera.cull_mask = 1;
 	reflect_camera.fov = main_cam.fov
+	reflect_camera.far = far
 	#reflect_camera.environment = main_cam.environment
 	#reflect_camera.attributes = main_cam.attributes
 	reflect_camera.doppler_tracking = main_cam.doppler_tracking

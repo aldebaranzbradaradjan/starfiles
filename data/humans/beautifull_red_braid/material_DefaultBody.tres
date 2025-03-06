@@ -1,0 +1,13 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://vuiqk8s2s1hb"]
+
+[ext_resource type="Texture2D" uid="uid://dr2b6fy5kqp2m" path="res://data/humans/beautifull_red_braid/texture_albedo_DefaultBody.res" id="1_yndro"]
+
+[resource]
+resource_local_to_scene = true
+albedo_color = Color(0.917969, 0.864182, 0.864182, 1)
+albedo_texture = ExtResource("1_yndro")
+metallic_specular = 0.11
+anisotropy = -0.28
+subsurf_scatter_enabled = true
+subsurf_scatter_strength = 0.2
+subsurf_scatter_skin_mode = true

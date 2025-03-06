@@ -1,0 +1,69 @@
+[gd_scene load_steps=13 format=3 uid="uid://cumkhyuqop1fg"]
+
+[ext_resource type="AnimationLibrary" uid="uid://dhl21etu0yhp8" path="res://data/animations.res" id="1_51u4d"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_voihi"]
+animation = &"animations/Falling Idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_gcnjm"]
+animation = &"animations/Falling To Landing"
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_twbn6"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_ovbho"]
+animation = &"animations/Dwarf Idle"
+
+[sub_resource type="AnimationNodeBlend3" id="AnimationNodeBlend3_qbb30"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_t6t3n"]
+animation = &"animations/Jumping Up"
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_omv47"]
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_drnru"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_kpb68"]
+animation = &"animations/Running"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_vxxra"]
+animation = &"animations/Walking_loop"
+
+[sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_bojor"]
+graph_offset = Vector2(-225.76, -70.7083)
+nodes/Fall/node = SubResource("AnimationNodeAnimation_voihi")
+nodes/Fall/position = Vector2(620, 440)
+nodes/FallLanding/node = SubResource("AnimationNodeAnimation_gcnjm")
+nodes/FallLanding/position = Vector2(920, 380)
+nodes/Falling/node = SubResource("AnimationNodeBlend2_twbn6")
+nodes/Falling/position = Vector2(920, 100)
+nodes/Idle/node = SubResource("AnimationNodeAnimation_ovbho")
+nodes/Idle/position = Vector2(-40, 0)
+nodes/Idle_Walk_Run/node = SubResource("AnimationNodeBlend3_qbb30")
+nodes/Idle_Walk_Run/position = Vector2(440, 100)
+nodes/Jump/node = SubResource("AnimationNodeAnimation_t6t3n")
+nodes/Jump/position = Vector2(280, 580)
+nodes/Jumping/node = SubResource("AnimationNodeBlend2_omv47")
+nodes/Jumping/position = Vector2(660, 100)
+nodes/Landing/node = SubResource("AnimationNodeBlend2_drnru")
+nodes/Landing/position = Vector2(1220, 100)
+nodes/Run/node = SubResource("AnimationNodeAnimation_kpb68")
+nodes/Run/position = Vector2(-20, 400)
+nodes/Walk/node = SubResource("AnimationNodeAnimation_vxxra")
+nodes/Walk/position = Vector2(-40, 200)
+nodes/output/position = Vector2(1540, 80)
+node_connections = [&"Falling", 0, &"Jumping", &"Falling", 1, &"Fall", &"Idle_Walk_Run", 0, &"Idle", &"Idle_Walk_Run", 1, &"Walk", &"Idle_Walk_Run", 2, &"Run", &"Jumping", 0, &"Idle_Walk_Run", &"Jumping", 1, &"Jump", &"Landing", 0, &"Falling", &"Landing", 1, &"FallLanding", &"output", 0, &"Landing"]
+
+[node name="AnimationTree" type="AnimationTree"]
+active = false
+root_node = NodePath(".")
+tree_root = SubResource("AnimationNodeBlendTree_bojor")
+anim_player = NodePath("AnimationPlayer")
+parameters/Falling/blend_amount = 0.0
+parameters/Idle_Walk_Run/blend_amount = 0
+parameters/Jumping/blend_amount = 0
+parameters/Landing/blend_amount = 0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"animations": ExtResource("1_51u4d")
+}

@@ -1,0 +1,27 @@
+[remap]
+
+importer="2d_array_texture"
+type="CompressedTexture2DArray"
+uid="uid://c6qtjqdkm8ckj"
+path.s3tc="res://.godot/imported/zur_desert_temple_shadow.png-ee6403f2d3b97dea94e7150a4b785bef.s3tc.ctexarray"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+
+[deps]
+
+source_file="res://ressources/maps/Zur/lightmap/zur_desert_temple_shadow.png"
+dest_files=["res://.godot/imported/zur_desert_temple_shadow.png-ee6403f2d3b97dea94e7150a4b785bef.s3tc.ctexarray"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/channel_pack=1
+mipmaps/generate=false
+mipmaps/limit=-1
+slices/horizontal=1
+slices/vertical=2

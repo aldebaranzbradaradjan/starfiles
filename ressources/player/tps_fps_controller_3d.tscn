@@ -1,9 +1,13 @@
-[gd_scene load_steps=5 format=3 uid="uid://dj3eloo0v8rss"]
+[gd_scene load_steps=7 format=3 uid="uid://dj3eloo0v8rss"]
 
 [ext_resource type="PackedScene" uid="uid://8oy3xm2sff8" path="res://addons/character-controller/fps/fps_controller_3d.tscn" id="1_ipnwl"]
 [ext_resource type="Script" uid="uid://4t5vcb3ravb1" path="res://addons/character-controller/example/main/player.gd" id="2_0y477"]
 [ext_resource type="Environment" uid="uid://b3cn01u84faiy" path="res://addons/character-controller/example/main/underwater.tres" id="3_611k8"]
 [ext_resource type="PackedScene" uid="uid://b504b6c2hl5ho" path="res://addons/character-controller/example/main/audios/player_audios.tscn" id="4_7dfpu"]
+[ext_resource type="PackedScene" uid="uid://cqhstrepy4n18" path="res://ressources/player/humanizer/create_test.tscn" id="5_0mxhy"]
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_0mxhy"]
+auto_exposure_enabled = true
 
 [node name="Player" instance=ExtResource("1_ipnwl")]
 script = ExtResource("2_0y477")
@@ -17,7 +21,11 @@ input_crouch_action_name = "move_crouch"
 input_fly_mode_action_name = "move_fly_mode"
 underwater_env = ExtResource("3_611k8")
 
-[node name="Camera3D" type="Camera3D" parent="Head/FirstPersonCameraReference" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.124524, 0)
+[node name="Camera3D" type="Camera3D" parent="Head/ThirdPersonCameraReference" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.124524, -0.483277)
+attributes = SubResource("CameraAttributesPractical_0mxhy")
 
 [node name="Player Audios" parent="." index="9" instance=ExtResource("4_7dfpu")]
+
+[node name="Humanizer" parent="." index="10" instance=ExtResource("5_0mxhy")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -1, 0)

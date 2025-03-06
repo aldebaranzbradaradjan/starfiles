@@ -1,4 +1,4 @@
-[gd_scene load_steps=37 format=3 uid="uid://h2pxte8ho7nv"]
+[gd_scene load_steps=47 format=3 uid="uid://h2pxte8ho7nv"]
 
 [ext_resource type="PackedScene" uid="uid://gj3xwsg2cpmo" path="res://external_ressources/maps/zur_desert_temple.glb" id="1_5co2l"]
 [ext_resource type="LightmapGIData" uid="uid://clgafom8j0a4y" path="res://ressources/maps/Zur/lightmap/zur_desert_temple.lmbake" id="2_8fm1l"]
@@ -12,7 +12,8 @@
 [ext_resource type="Material" uid="uid://c4p4jr823j1gw" path="res://addons/gd_planar_reflections/ReflectionMaterial.tres" id="10_oj5e7"]
 
 [sub_resource type="Gradient" id="Gradient_5hx2i"]
-colors = PackedColorArray(0, 0, 0, 1, 1, 0.927972, 0.943013, 1)
+offsets = PackedFloat32Array(0, 0.744875, 0.931663)
+colors = PackedColorArray(0, 0, 0, 1, 0.866499, 0.703889, 0.710356, 1, 0.997733, 1, 0.90211, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_3fsjg"]
 gradient = SubResource("Gradient_5hx2i")
@@ -64,8 +65,8 @@ ambient_light_source = 3
 ambient_light_color = Color(0.8, 0.7296, 0.6744, 0.8)
 ambient_light_sky_contribution = 0.21
 ambient_light_energy = 1.1232
-tonemap_mode = 2
-tonemap_exposure = 0.53
+reflected_light_source = 2
+tonemap_mode = 4
 tonemap_white = 0.37
 ssr_max_steps = 512
 ssao_radius = 16.0
@@ -81,15 +82,16 @@ glow_enabled = true
 glow_intensity = 0.05
 glow_bloom = 1.0
 fog_enabled = true
+fog_mode = 1
 fog_light_color = Color(1, 0.912, 0.843, 1)
-fog_light_energy = 0.55
-fog_density = 0.0005
+fog_sun_scatter = 0.12
+fog_density = 0.5465
 fog_sky_affect = 0.347
 fog_height = 80.58
 fog_height_density = 0.002
-fog_depth_curve = 0.999996
-fog_depth_begin = 1098.0
-fog_depth_end = 1960.8
+fog_depth_curve = 0.138696
+fog_depth_begin = 166.9
+fog_depth_end = 4000.0
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.002
 volumetric_fog_albedo = Color(1, 0.912, 0.843, 1)
@@ -101,6 +103,7 @@ volumetric_fog_detail_spread = 6.0
 volumetric_fog_ambient_inject = 1.37
 volumetric_fog_temporal_reprojection_enabled = false
 adjustment_enabled = true
+adjustment_brightness = 1.13
 adjustment_color_correction = SubResource("GradientTexture2D_3fsjg")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p60tx"]
@@ -209,10 +212,126 @@ size = Vector2(5000, 5000)
 subdivide_width = 20
 subdivide_depth = 20
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_r5qca"]
+bottom_radius = 0.145
+height = 4.386
+cap_top = false
+cap_bottom = false
+
+[sub_resource type="Shader" id="Shader_d2v7s"]
+code = "shader_type spatial;
+render_mode  blend_add, depth_draw_opaque, cull_disabled, diffuse_burley, shadows_disabled;
+
+uniform float alpha : hint_range(0.0, 1.0) = 0.5;
+uniform float rim_power : hint_range(0.0, 5.0) = 1.0;
+
+uniform sampler2D texture_emission : source_color, hint_default_black,filter_linear_mipmap,repeat_enable;
+uniform sampler2D gradient : source_color, hint_default_black,filter_linear_mipmap,repeat_enable;
+
+uniform vec4 emission : source_color;
+uniform float emission_energy : hint_range(0.0, 1.0) = 0.5;
+uniform vec3 uv1_scale = vec3(5.0, 0.0, 0.0);
+uniform vec3 uv1_offset = vec3(0.0, 1.0, 0.0); //change y to whooooosh effect
+
+varying vec2 base_uv;
+
+uniform float distance_fade_min : hint_range(0.0, 4096.0, 0.01);
+uniform float distance_fade_max : hint_range(0.0, 4096.0, 0.01);
+
+// rotate on 90 degrees
+vec2 rotateUV(vec2 uv) {
+	return vec2(1.0 * (uv.y - 0.5) + 0.5, -1.0 * (uv.y - 0.5) + 0.5);
+}
+
+void vertex() {
+	base_uv = rotateUV(UV);
+	UV = UV * uv1_scale.xy + uv1_offset.xy;
+	UV.y += TIME * 0.01; // If you need animation, this needs some work.
+}
+
+void fragment() {
+
+	vec3 fallof = texture(gradient, base_uv).rgb;
+
+	float fresnel = pow(1.0 - dot(normalize(NORMAL), normalize(VIEW)), rim_power);
+	float fade = mix(1.0, -1.0, fresnel);
+
+	ROUGHNESS = 0.0;
+	SPECULAR = 0.0;
+
+	vec3 emission_tex = texture(texture_emission, UV).rgb;
+	EMISSION = (emission.rgb + emission_tex) * emission_energy * fallof;
+
+	ALPHA = clamp(fade, 0.0, 1.0) * EMISSION.r * alpha;
+
+	// Distance Fade: Pixel Alpha
+	ALPHA *= clamp(smoothstep(distance_fade_min, distance_fade_max, length(VERTEX)), 0.0, 1.0);
+}"
+
+[sub_resource type="Gradient" id="Gradient_g6qli"]
+offsets = PackedFloat32Array(0, 0.227166, 0.381733, 0.559719)
+colors = PackedColorArray(0, 0, 0, 1, 0.832031, 0.510416, 0, 1, 1, 0.924882, 0.657317, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_yj6ek"]
+gradient = SubResource("Gradient_g6qli")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ok7fa"]
+frequency = 0.0027
+fractal_octaves = 9
+fractal_lacunarity = 5.215
+fractal_gain = 0.45
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_0dr7j"]
+in_3d_space = true
+seamless = true
+noise = SubResource("FastNoiseLite_ok7fa")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2e2at"]
+render_priority = 0
+shader = SubResource("Shader_d2v7s")
+shader_parameter/alpha = 0.2
+shader_parameter/rim_power = 0.747
+shader_parameter/texture_emission = SubResource("NoiseTexture2D_0dr7j")
+shader_parameter/gradient = SubResource("GradientTexture1D_yj6ek")
+shader_parameter/emission = Color(0, 0, 0, 1)
+shader_parameter/emission_energy = 1.0
+shader_parameter/uv1_scale = Vector3(2.09, 0, 0)
+shader_parameter/uv1_offset = Vector3(0, 1, 0)
+shader_parameter/distance_fade_min = 0.0
+shader_parameter/distance_fade_max = 10.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_g6qli"]
+top_radius = 0.2
+bottom_radius = 0.2
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yj6ek"]
+render_priority = 0
+shader = SubResource("Shader_d2v7s")
+shader_parameter/alpha = 0.074
+shader_parameter/rim_power = 0.767
+shader_parameter/texture_emission = SubResource("NoiseTexture2D_0dr7j")
+shader_parameter/gradient = SubResource("GradientTexture1D_yj6ek")
+shader_parameter/emission = Color(0, 0, 0, 1)
+shader_parameter/emission_energy = 1.0
+shader_parameter/uv1_scale = Vector3(2.09, 0, 0)
+shader_parameter/uv1_offset = Vector3(0, 1, 0)
+shader_parameter/distance_fade_min = 0.0
+shader_parameter/distance_fade_max = 10.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_d2v7s"]
+top_radius = 0.395
+bottom_radius = 0.145
+height = 2.41
+cap_top = false
+cap_bottom = false
+
 [node name="world" type="Node3D"]
 
 [node name="LightmapGI" type="LightmapGI" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.658, 4.87151, 5.9124)
+supersampling = true
+supersampling_factor = 4.0
+shadowmask_mode = 2
 light_data = ExtResource("2_8fm1l")
 
 [node name="zur_desert_temple" parent="." instance=ExtResource("1_5co2l")]
@@ -228,9 +347,11 @@ extra_cull_margin = 16384.0
 extra_cull_margin = 16384.0
 
 [node name="SW house 2" parent="zur_desert_temple" index="3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 173.461, 9.56227, -42.5495)
 extra_cull_margin = 16384.0
 
 [node name="SW house 2_001" parent="zur_desert_temple" index="4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 198.76, 9.60796, -42.1308)
 extra_cull_margin = 16384.0
 
 [node name="element 4" parent="zur_desert_temple" index="5"]
@@ -304,12 +425,13 @@ material = SubResource("ShaderMaterial_p60tx")
 [node name="DirectionalLight3D" parent="WorldEnvironment" index="1"]
 transform = Transform3D(1, 0, 0, 0, 0.942289, 0.334793, 0, -0.334793, 0.942289, 0, 0.334794, 0.942291)
 light_energy = 1.1232
-directional_shadow_max_distance = 500.0
+directional_shadow_max_distance = 100.0
 
 [node name="Player" parent="." instance=ExtResource("5_vt7hh")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9205, 23.6668, 14.3157)
 
-[node name="Node3D" type="Node3D" parent="."]
+[node name="Humanizer" parent="Player" index="10" node_paths=PackedStringArray("player")]
+player = NodePath("..")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.628107, 0)
@@ -360,9 +482,90 @@ metadata/_edit_lock_ = true
 [node name="PlanarReflection" parent="." node_paths=PackedStringArray("main_cam") instance=ExtResource("9_cjoqw")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 1.1325, 0)
 mesh = SubResource("PlaneMesh_38k76")
-main_cam = NodePath("../Player/Head/FirstPersonCameraReference/Camera3D")
+main_cam = NodePath("../Player/Head/ThirdPersonCameraReference/Camera3D")
 reflection_camera_resolution = Vector2i(320, 180)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(3.04312, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 0.75461, 12.2881, 24.2295)
+mesh = SubResource("CylinderMesh_r5qca")
+surface_material_override/0 = SubResource("ShaderMaterial_2e2at")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, -3.12096, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, -5.484, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, -7.81514, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, -10.1682, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D7" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, -12.2381, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D8" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, -14.5887, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D9" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, -16.9429, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D10" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 18.4474, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D11" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 16.0844, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D12" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 13.7532, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D13" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 11.4001, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D14" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 9.3303, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D15" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 6.97969, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D16" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.07657, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 4.62547, 11.6829, 24.7406)
+mesh = SubResource("CylinderMesh_g6qli")
+surface_material_override/0 = SubResource("ShaderMaterial_yj6ek")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(3.04312, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 0.75461, 11.6805, 25.1869)
+mesh = SubResource("CylinderMesh_d2v7s")
+surface_material_override/0 = SubResource("ShaderMaterial_2e2at")
 
 [editable path="zur_desert_temple"]
 [editable path="WorldEnvironment"]
 [editable path="Player"]
+[editable path="Player/Humanizer"]

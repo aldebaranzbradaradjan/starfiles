@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3 uid="uid://cqhstrepy4n18"]
+
+[sub_resource type="GDScript" id="GDScript_sdptm"]
+script/source = "extends Node3D
+
+var humanizer := Humanizer.new()
+var shirt : HumanizerEquipment 
+var suit_top : HumanizerEquipment
+var body_mesh_inst : MeshInstance3D
+var anim_player : AnimationPlayer
+var anim_tree : AnimationTree
+@export var player : FPSController3D
+
+func _ready() -> void:
+	shirt = HumanizerEquipment.new(\"Shirt-MakeHumanTShirt\")
+	suit_top = HumanizerEquipment.new(\"Shirt-SuitTop\")
+	var config = HumanConfig.new()
+	config.targets['gender'] = 0.0
+	config.targets['age'] = .25
+	config.init_macros()
+	
+	config.eye_color = Color.GREEN
+	config.hair_color = Color.PURPLE
+	config.eyebrow_color = Color(\"550055\")
+	config.rig = ProjectSettings.get_setting( \"addons/humanizer/default_skeleton\")
+	config.add_equipment(HumanizerEquipment.new(\"Body-Default\",\"young_caucasian_female\"))
+	config.add_equipment(HumanizerEquipment.new(\"Pants-SkinnyJeans\"))
+	config.add_equipment(shirt)
+	config.add_equipment(HumanizerEquipment.new(\"Shoes-02\"))
+	config.add_equipment(HumanizerEquipment.new(\"RightEye-LowPolyEyeball\"))
+	config.add_equipment(HumanizerEquipment.new(\"LeftEye-LowPolyEyeball\"))
+	config.add_equipment(HumanizerEquipment.new(\"Hair-Ponytail01_Rigged\"))
+	config.add_equipment(HumanizerEquipment.new(\"RightEyebrow-002\"))
+	config.add_equipment(HumanizerEquipment.new(\"LeftEyebrow-002\"))
+	config.add_equipment(HumanizerEquipment.new(\"RightEyelash\"))
+	config.add_equipment(HumanizerEquipment.new(\"LeftEyelash\"))
+	humanizer.load_config_async(config)
+	config.disable_component(\"main_collider\")
+	var char = humanizer.get_CharacterBody3D(false) ## can bake character here by setting argument to true
+	add_child(char)
+	HumanizerUtils.set_node_owner(char,self)
+	#char.camera = $Camera3D
+	body_mesh_inst = char.get_node(\"Avatar\")
+	anim_player = char.get_node(\"AnimationTree/AnimationPlayer\")
+	anim_tree = char.get_node(\"AnimationTree\")
+	anim_tree.active = false
+	anim_player.play(\"animations/Idle\")
+	
+func _process(delta: float) -> void:
+	if abs(player.velocity) > Vector3(0.5,0.5,0.5) :
+		anim_player.play(\"animations/Run\")
+	else : anim_player.play(\"animations/Idle\")
+"
+
+[node name="Node3D" type="Node3D"]
+script = SubResource("GDScript_sdptm")

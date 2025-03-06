@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://bkikix3vloh1k"]
+
+[ext_resource type="Texture2D" uid="uid://bldic3afwgq5w" path="res://data/humans/beautifull_red_braid/texture_albedo_FalseLeftEyelash.res" id="1_ucrm6"]
+
+[resource]
+resource_local_to_scene = true
+transparency = 4
+cull_mode = 2
+diffuse_mode = 2
+specular_mode = 2
+albedo_texture = ExtResource("1_ucrm6")

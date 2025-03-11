@@ -23,6 +23,8 @@ uniform sampler2D texture_normal : hint_roughness_normal,filter_linear_mipmap_an
 uniform sampler2D texture_normal2 : hint_roughness_normal,filter_linear_mipmap_anisotropic,repeat_enable;
 
 uniform sampler2D reflection_screen_texture: source_color, repeat_enable, filter_linear_mipmap_anisotropic;
+//uniform sampler2D previous_texture: source_color, repeat_enable, filter_linear_mipmap_anisotropic;
+//uniform float blend_factor;
 
 uniform float normal_scale : hint_range(-16,16);
 uniform float normal_uv_mult : hint_range(-16,16);
@@ -39,10 +41,10 @@ void vertex() {
 
 void fragment() {
 	float time = TIME * 0.8;
-	vec3 n1 = texture(noise1, UV*1000.0 + time).rgb;
-	vec3 n2 = texture(noise2, UV*1000.0 - time * 0.2).rgb;
+	vec3 n1 = texture(noise1, UV*100.0 + time).rgb;
+	vec3 n2 = texture(noise2, UV*100.0 - time * 0.2).rgb;
 	float sum = (n1.r + n2.r) - 1.0;
-	vec2 displacement = vec2(sum * 0.03);
+	vec2 displacement = vec2(sum * 0.01);
 
 	vec2 base_uv = UV;
 	vec3 NORMAL_MAP1 = texture(texture_normal,vec2(base_uv.x - TIME*0.002, base_uv.y - TIME*0.002)*normal_uv_mult).rgb;
@@ -50,7 +52,13 @@ void fragment() {
 	vec2 warped_uv = vec2(SCREEN_UV + distortion_strength * NORMAL_MAP1.rr - distortion_strength*NORMAL_MAP1.gg);
 	warped_uv.x = clamp(warped_uv.x, 0.0, 1.0);
 	warped_uv.y = clamp(warped_uv.y, 0.0, 1.0);
-	vec4 reflection_tex = texture(reflection_screen_texture, warped_uv);
+
+	vec4 reflection_tex = texture(reflection_screen_texture, warped_uv - displacement);
+	//vec4 new_frame = texture(reflection_screen_texture, SCREEN_UV);
+	//vec4 old_frame = texture(previous_texture, SCREEN_UV);
+	//// Interpolation entre l'ancienne et la nouvelle image
+	//vec4 reflection_tex = mix(old_frame, new_frame, 0.5);
+
 	ALBEDO = mix(reflection_tex.rgb, albedo_tex.rgb * albedo.rgb, reflection_strength);
 
 	float metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);

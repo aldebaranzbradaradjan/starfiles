@@ -47,7 +47,7 @@ func _ready() -> void:
 	anim_player.play(\"animations/Idle\")
 	
 func _process(delta: float) -> void:
-	if abs(player.velocity) > Vector3(0.5,0.5,0.5) :
+	if abs(player.velocity).x > 0.5 or abs(player.velocity).y > 0.5 or abs(player.velocity).z > 0.5 :
 		anim_player.play(\"animations/Run\")
 	else : anim_player.play(\"animations/Idle\")
 "

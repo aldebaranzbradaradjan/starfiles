@@ -115,7 +115,9 @@ shader_parameter/uv2_scale = Vector3(0.68, 1, 1)
 shader_parameter/uv2_offset = Vector3(0.72, 0, 0)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_mbvqk"]
+lightmap_size_hint = Vector2i(1002, 1002)
 material = SubResource("ShaderMaterial_nwxqx")
+add_uv2 = true
 size = Vector2(200, 200)
 subdivide_width = 10
 subdivide_depth = 10

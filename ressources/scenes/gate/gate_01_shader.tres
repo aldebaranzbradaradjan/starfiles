@@ -1,0 +1,154 @@
+[gd_resource type="ShaderMaterial" load_steps=7 format=3 uid="uid://dpmeks5m4eq8s"]
+
+[ext_resource type="Texture2D" uid="uid://jd4xs8v4y2jh" path="res://external_ressources/textures/water/Water_N_A.png" id="1_a5gq8"]
+
+[sub_resource type="Shader" id="Shader_q0b1p"]
+code = "shader_type spatial;
+render_mode blend_mix, depth_draw_always, cull_back, diffuse_burley, specular_schlick_ggx, shadows_disabled;
+
+uniform float PORTAL_RADIUS = 0.5;
+uniform vec3 PORTAL_NORMAL = vec3(0, 0, 1);
+uniform vec3 PORTAL_CENTER = vec3(0, 0, 0);
+uniform vec3 PORTAL_SEAM = vec3(0, 1, 0);
+uniform sampler2D INSIDE_TEXTURE: source_color, repeat_enable;
+uniform sampler2D texture_normal : hint_roughness_normal,filter_linear_mipmap_anisotropic,repeat_enable;
+
+uniform float size: hint_range(0.0,0.5) = 0.5;
+uniform float size_inner: hint_range(0.1,1) = 0.2;
+uniform sampler2D noise;
+uniform vec4 portalFrameColor : source_color;
+uniform vec4 portalHighlightColor : source_color;
+uniform vec4 inner : source_color;
+
+vec3 perpendicular_part(vec3 direction, vec3 axis) {
+    return direction - dot(direction, axis) * axis;
+}
+
+vec3 parallel_part(vec3 direction, vec3 axis) {
+    return dot(direction, axis) * axis;
+}
+
+float angle_between(vec3 vec, vec3 reference) {
+    return atan(length(cross(vec, reference)), dot(vec, reference));
+}
+
+float signed_angle_between(vec3 vec, vec3 reference, vec3 normal) {
+    vec3 cross_to = cross(vec, reference);
+	float unsigned_angle = atan(length(cross_to), dot(vec, reference));
+	return (dot(cross_to, normal) < 0.) ? unsigned_angle : -unsigned_angle;
+}
+
+// Uses a triangle projected onto the plane with points
+// - circle center
+// - vertex
+// - intersection point on the edge of the circle
+// and uses the law of sines to compute the relevant distance
+vec2 portal_uv(vec3 ray_dir, vec3 ray_start, vec3 portal_center, vec3 portal_normal, vec3 portal_seam, float portal_radius) {
+    vec3 lateral_ray = perpendicular_part(ray_dir, portal_normal);
+    vec3 lateral_direction = normalize(lateral_ray);
+    vec3 initial_offset = ray_start - portal_center;
+    vec3 initial_direction = normalize(initial_offset);
+    float radius_angle = angle_between(lateral_direction, -initial_direction);
+    float sin_ratio = portal_radius / sin(radius_angle);
+    float center_angle = asin(length(initial_offset) / sin_ratio);
+    float lateral_angle = PI - radius_angle - center_angle;
+    float lateral_distance = sin_ratio * sin(lateral_angle);
+
+    vec3 flat_intersection_offset = initial_offset + lateral_distance * lateral_direction;
+    float portal_angle = signed_angle_between(normalize(flat_intersection_offset), -portal_seam, portal_normal);
+    float depth = abs(dot(ray_dir, portal_normal)) / length(lateral_ray) * lateral_distance;
+    return vec2((portal_angle + PI) / TAU, depth);
+}
+
+vec2 rotateUV(vec2 uv, vec2 pivot, float angle)
+{
+    mat2 rotation = mat2(vec2(sin(angle), -cos(angle)),
+                        vec2(cos(angle), sin(angle)));
+
+    uv -= pivot;
+    uv = uv * rotation;
+    uv += pivot;
+    return uv;
+}
+
+void fragment() {
+	float dist = length(UV - vec2(0.25,0.75));
+    vec2 nuv = UV;
+
+    nuv = rotateUV(vec2(UV.x-0.5, UV.y+0.1)*2.1 , vec2(0.5), TIME*0.5);
+    nuv.x += (TIME*0.1);
+    nuv.y -= (TIME*0.1);
+
+    vec3 global_view = normalize((INV_VIEW_MATRIX * vec4(VIEW, 0)).xyz);
+    vec3 global_vertex = (INV_VIEW_MATRIX * vec4(VERTEX, 1)).xyz;
+    if (distance(global_vertex, PORTAL_CENTER) > PORTAL_RADIUS) {
+        ALPHA = 0.;
+    } else {
+        vec2 tube_uv = portal_uv(-global_view, global_vertex, PORTAL_CENTER, PORTAL_NORMAL, PORTAL_SEAM, PORTAL_RADIUS);
+		tube_uv += nuv;
+        ALBEDO = texture(INSIDE_TEXTURE, tube_uv.xy).rgb;
+        //ALBEDO.b += tube_uv.y;
+        //ALPHA = 1.;
+
+
+
+	    vec4 ntexel = texture(noise, nuv);
+
+	    float a = smoothstep(size, size-0.04, dist);
+	    float a2 = smoothstep(size, (ntexel.r*0.10)+(size-size_inner), dist);
+
+	    vec4 result = mix(portalHighlightColor, portalHighlightColor , a);
+	    ALPHA = a;
+
+	    if (a == 1.0) {
+	        result = inner;
+	    }
+
+	    if (a2 < 0.2) {
+	        result = portalHighlightColor;
+	    }
+
+	    result = mix(portalFrameColor, result , a2);
+		ALBEDO *= result.rgb;
+		ALBEDO += result.rgb * ALPHA;
+		//ALBEDO *= 0.5;
+    	EMISSION = ALBEDO;
+		NORMAL += ntexel.rgb;
+		ROUGHNESS = ALBEDO.r * 0.3;
+		METALLIC = ALBEDO.r*2.;
+    }
+}"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_shvgd"]
+frequency = 0.0041
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_8pukt"]
+seamless = true
+noise = SubResource("FastNoiseLite_shvgd")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_bjvpv"]
+frequency = 0.0885
+fractal_type = 3
+domain_warp_enabled = true
+domain_warp_frequency = 0.015
+domain_warp_fractal_gain = 1.86
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_m7wex"]
+seamless = true
+noise = SubResource("FastNoiseLite_bjvpv")
+
+[resource]
+render_priority = 0
+shader = SubResource("Shader_q0b1p")
+shader_parameter/PORTAL_RADIUS = 1.91
+shader_parameter/PORTAL_NORMAL = Vector3(0.66, 0, 0)
+shader_parameter/PORTAL_CENTER = Vector3(0, 0, 0)
+shader_parameter/PORTAL_SEAM = Vector3(0, 0, 0)
+shader_parameter/INSIDE_TEXTURE = SubResource("NoiseTexture2D_8pukt")
+shader_parameter/texture_normal = ExtResource("1_a5gq8")
+shader_parameter/size = 0.2
+shader_parameter/size_inner = 0.336
+shader_parameter/noise = SubResource("NoiseTexture2D_m7wex")
+shader_parameter/portalFrameColor = Color(0.931214, 1, 0.557437, 1)
+shader_parameter/portalHighlightColor = Color(0.0823721, 1, 0.343438, 1)
+shader_parameter/inner = Color(0, 1, 0.263706, 1)

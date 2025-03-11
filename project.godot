@@ -76,7 +76,7 @@ movie_writer/movie_file="/run/media/florian/disk2/Work/Games/Godot Workfolder/Go
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/Imposter/plugin.cfg", "res://addons/character-controller/plugin.cfg", "res://addons/dreadpon.spatial_gardener/plugin.cfg", "res://addons/humanizer/plugin.cfg", "res://addons/humanizer_author/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
+enabled=PackedStringArray("res://addons/Imposter/plugin.cfg", "res://addons/SphynxMotionBlurToolkit/plugin.cfg", "res://addons/character-controller/plugin.cfg", "res://addons/dreadpon.spatial_gardener/plugin.cfg", "res://addons/humanizer/plugin.cfg", "res://addons/humanizer_author/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
 
 [input]
 
@@ -120,8 +120,14 @@ move_fly_mode={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":70,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
+use_action={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":69,"key_label":0,"unicode":101,"location":0,"echo":false,"script":null)
+]
+}
 
 [rendering]
 
 scaling_3d/mode=2
 scaling_3d/fsr_sharpness=2.0
+lights_and_shadows/positional_shadow/atlas_size=6144

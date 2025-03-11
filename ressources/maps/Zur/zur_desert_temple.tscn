@@ -430,9 +430,6 @@ directional_shadow_max_distance = 100.0
 [node name="Player" parent="." instance=ExtResource("5_vt7hh")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9205, 23.6668, 14.3157)
 
-[node name="Humanizer" parent="Player" index="10" node_paths=PackedStringArray("player")]
-player = NodePath("..")
-
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.628107, 0)
 
@@ -482,7 +479,9 @@ metadata/_edit_lock_ = true
 [node name="PlanarReflection" parent="." node_paths=PackedStringArray("main_cam") instance=ExtResource("9_cjoqw")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 1.1325, 0)
 mesh = SubResource("PlaneMesh_38k76")
-main_cam = NodePath("../Player/Head/ThirdPersonCameraReference/Camera3D")
+reflection_fps = 60
+blur = 0.0
+main_cam = NodePath("../Player/Head/ThirdPersonCameraReference/SpringArm3D/Camera3D")
 reflection_camera_resolution = Vector2i(320, 180)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwcqrd5rcpsx"]
+
+[ext_resource type="Script" uid="uid://cqsbj5kphymwx" path="res://ressources/environments/terrain3d_baker.gd" id="1_pqrs4"]
+
+[node name="TerrainBaker" type="Node3D"]
+script = ExtResource("1_pqrs4")

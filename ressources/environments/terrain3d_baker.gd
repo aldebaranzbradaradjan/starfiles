@@ -1,13 +1,17 @@
+@tool
 extends Node3D
 
 @export var output_path: String = "user://terrain_capture.png"  # Chemin du fichier
 var camera: Camera3D
 var custom_viewport: SubViewport  # Viewport dédié à la capture
 
+@export_tool_button("Bake Terrain")
+var c : Callable = func ():
+	capture_terrain()
+		
 func _ready():
 	setup_camera()
 	await get_tree().process_frame  # Attendre un frame pour la mise à jour
-	await capture_terrain()
 
 func setup_camera():
 	# Création d'un SubViewport pour capturer en 5000x5000

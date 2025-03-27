@@ -1,13 +1,14 @@
 extends MeshInstance3D
 class_name PlanarReflector
 
-var materialToSet:ShaderMaterial = load("res://addons/gd_planar_reflections/ReflectionMaterial.tres");
+@export var materialToSet:ShaderMaterial = load("res://external_ressources/materials/PlanarReflectionWindow.tres");
 
 @export var reflection_fps: int = 15  # FPS de la réflexion
 var _time_accumulator = 0.0
 
 @export var blur : float = 0.015 :
 	set(value):
+		blur = value
 		if reflect_camera != null :
 			var attributes = reflect_camera.attributes
 			attributes.dof_blur_amount = value
@@ -15,6 +16,7 @@ var _time_accumulator = 0.0
 
 @export var far : int = 500 :
 	set(value):
+		far = value
 		if reflect_camera != null :
 			reflect_camera.far = value
 		
@@ -25,6 +27,7 @@ var reflect_viewport: SubViewport
 @export var reflection_camera_resolution: Vector2i = Vector2i(1920, 1080)
 @export var reflection_camera_resolution_multiplier: float = 0.2 :
 	set(value):
+		reflection_camera_resolution_multiplier = value
 		if reflect_viewport != null :
 			reflect_viewport.size = reflection_camera_resolution * reflection_camera_resolution_multiplier;
 
@@ -44,11 +47,12 @@ func _ready():
 	reflect_camera.fov = main_cam.fov
 	reflect_camera.far = far
 	
-	var cam_attributes = CameraAttributesPractical.new()
+	var cam_attributes = CameraAttributesPractical.new() #get_world_3d().camera_attributes.duplicate() #
 	cam_attributes.dof_blur_far_enabled = true  # Active le DOF sur l'arrière-plan
 	cam_attributes.dof_blur_far_distance = 5.0  # Distance où commence le flou
 	cam_attributes.dof_blur_far_transition = 10.0  # Adoucit la transition
 	cam_attributes.dof_blur_amount = blur  # Intensité du flou
+	#cam_attributes.exposure_multiplier = 3.0
 	reflect_camera.attributes = cam_attributes  # Appliquer à la caméra de réflexion
 
 	reflect_camera.doppler_tracking = main_cam.doppler_tracking

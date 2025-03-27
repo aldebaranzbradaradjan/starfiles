@@ -1,6 +1,7 @@
-[gd_resource type="ShaderMaterial" load_steps=7 format=3 uid="uid://dpmeks5m4eq8s"]
+[gd_resource type="ShaderMaterial" load_steps=6 format=3 uid="uid://dpmeks5m4eq8s"]
 
 [ext_resource type="Texture2D" uid="uid://jd4xs8v4y2jh" path="res://external_ressources/textures/water/Water_N_A.png" id="1_a5gq8"]
+[ext_resource type="Texture2D" uid="uid://b5hqpr5lc5anb" path="res://external_ressources/textures/water/Water_N_B.png" id="1_l66yw"]
 
 [sub_resource type="Shader" id="Shader_q0b1p"]
 code = "shader_type spatial;
@@ -8,7 +9,7 @@ render_mode blend_mix, depth_draw_always, cull_back, diffuse_burley, specular_sc
 
 uniform float PORTAL_RADIUS = 0.5;
 uniform vec3 PORTAL_NORMAL = vec3(0, 0, 1);
-uniform vec3 PORTAL_CENTER = vec3(0, 0, 0);
+uniform vec3 PORTAL_CENTER = vec3(0, 0, 0); 
 uniform vec3 PORTAL_SEAM = vec3(0, 1, 0);
 uniform sampler2D INSIDE_TEXTURE: source_color, repeat_enable;
 uniform sampler2D texture_normal : hint_roughness_normal,filter_linear_mipmap_anisotropic,repeat_enable;
@@ -86,7 +87,8 @@ void fragment() {
     } else {
         vec2 tube_uv = portal_uv(-global_view, global_vertex, PORTAL_CENTER, PORTAL_NORMAL, PORTAL_SEAM, PORTAL_RADIUS);
 		tube_uv += nuv;
-        ALBEDO = texture(INSIDE_TEXTURE, tube_uv.xy).rgb;
+        ALBEDO = texture(INSIDE_TEXTURE, tube_uv.xy).rgb * 0.02;
+		ALBEDO += texture(INSIDE_TEXTURE, UV*tube_uv*0.1 + tube_uv*0.3).rgb*0.3;
         //ALBEDO.b += tube_uv.y;
         //ALPHA = 1.;
 
@@ -98,7 +100,7 @@ void fragment() {
 	    float a2 = smoothstep(size, (ntexel.r*0.10)+(size-size_inner), dist);
 
 	    vec4 result = mix(portalHighlightColor, portalHighlightColor , a);
-	    ALPHA = a;
+	    ALPHA = a ;
 
 	    if (a == 1.0) {
 	        result = inner;
@@ -109,7 +111,7 @@ void fragment() {
 	    }
 
 	    result = mix(portalFrameColor, result , a2);
-		ALBEDO *= result.rgb;
+		//ALBEDO *= result.rgb;
 		ALBEDO += result.rgb * ALPHA;
 		//ALBEDO *= 0.5;
     	EMISSION = ALBEDO;
@@ -118,13 +120,6 @@ void fragment() {
 		METALLIC = ALBEDO.r*2.;
     }
 }"
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_shvgd"]
-frequency = 0.0041
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_8pukt"]
-seamless = true
-noise = SubResource("FastNoiseLite_shvgd")
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_bjvpv"]
 frequency = 0.0885
@@ -138,15 +133,15 @@ seamless = true
 noise = SubResource("FastNoiseLite_bjvpv")
 
 [resource]
-render_priority = 0
+render_priority = -11
 shader = SubResource("Shader_q0b1p")
-shader_parameter/PORTAL_RADIUS = 1.91
+shader_parameter/PORTAL_RADIUS = 12.69
 shader_parameter/PORTAL_NORMAL = Vector3(0.66, 0, 0)
-shader_parameter/PORTAL_CENTER = Vector3(0, 0, 0)
+shader_parameter/PORTAL_CENTER = Vector3(-25.0456, 3.07967, -12.3194)
 shader_parameter/PORTAL_SEAM = Vector3(0, 0, 0)
-shader_parameter/INSIDE_TEXTURE = SubResource("NoiseTexture2D_8pukt")
+shader_parameter/INSIDE_TEXTURE = ExtResource("1_l66yw")
 shader_parameter/texture_normal = ExtResource("1_a5gq8")
-shader_parameter/size = 0.2
+shader_parameter/size = 0.0
 shader_parameter/size_inner = 0.336
 shader_parameter/noise = SubResource("NoiseTexture2D_m7wex")
 shader_parameter/portalFrameColor = Color(0.931214, 1, 0.557437, 1)

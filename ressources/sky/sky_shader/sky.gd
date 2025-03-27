@@ -177,10 +177,12 @@ func set_time():
 	sky_shader.set_shader_parameter("MOON_TEX_POS",moon_tex_pos);
 	sky_shader.set_shader_parameter("attenuation",clamp(light_energy,night_level_light*0.1,1.00));#clouds too bright with night_level_light
 
-func _process(delta:float):
+#func _process(delta:float):
 	#print(time_of_day_setup)
 	#time_of_day_setup += delta*0.1;
-	set_time_of_day(time_of_day_setup)
+	
+	#set_time_of_day(time_of_day_setup)
+	
 	#if !lighting_strike:
 		#return;
 	#lighting_time += delta;
@@ -194,8 +196,8 @@ func _process(delta:float):
 	#time_of_day_setup = get_normalized_hour()
 	
 
-#func _ready():
-	#set_process(true);
+func _ready():
+	set_time_of_day(time_of_day_setup)
 
 func get_normalized_hour() -> float:
 	var time_dico = Time.get_time_dict_from_system()

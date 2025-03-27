@@ -1,10 +1,14 @@
-[gd_scene load_steps=21 format=3 uid="uid://53gsqublgx1a"]
+[gd_scene load_steps=30 format=3 uid="uid://53gsqublgx1a"]
 
 [ext_resource type="PackedScene" uid="uid://cqbgicmaf8w8j" path="res://external_ressources/maps/spc.glb" id="2_0p3hi"]
 [ext_resource type="PackedScene" uid="uid://dj3eloo0v8rss" path="res://ressources/player/tps_fps_controller_3d.tscn" id="2_3y5my"]
 [ext_resource type="LightmapGIData" uid="uid://serxeut887os" path="res://ressources/maps/SPC/base_in/base.lmbake" id="3_0p3hi"]
 [ext_resource type="Material" uid="uid://c8ivujriw66p3" path="res://external_ressources/materials/concrete_wall_01.tres" id="3_ifk3r"]
 [ext_resource type="Material" uid="uid://bv8808jwahcq7" path="res://external_ressources/materials/concrete_floor_01.tres" id="4_3ur66"]
+[ext_resource type="Texture2D" uid="uid://djakktc8txxh1" path="res://external_ressources/textures/plastered_wall_03_1k/plastered_wall_03_nor_gl_1k.jpg" id="5_2hhmk"]
+[ext_resource type="Material" uid="uid://dugcnvg8icftr" path="res://external_ressources/materials/PlanarReflectionWindow.tres" id="5_f7h5f"]
+[ext_resource type="Texture2D" uid="uid://eat18kuuupgb" path="res://external_ressources/textures/plastered_wall_03_1k/plastered_wall_03_rough_1k.jpg" id="6_vw1qo"]
+[ext_resource type="Script" uid="uid://bnhg5jehl1mhx" path="res://addons/gd_planar_reflections/PlanarReflection.gd" id="6_y61x8"]
 [ext_resource type="Material" uid="uid://du7yf1xjwr3ha" path="res://external_ressources/materials/blue_painted_steel_metal.tres" id="17_8idah"]
 [ext_resource type="PackedScene" uid="uid://01mw2o5mlhm0" path="res://ressources/scenes/gate_01.tscn" id="21_bnj18"]
 
@@ -12,9 +16,9 @@
 ambient_light_source = 2
 ambient_light_color = Color(0.296875, 0.296875, 0.296875, 1)
 tonemap_mode = 4
-ssil_enabled = true
 sdfgi_use_occlusion = true
 sdfgi_read_sky_light = false
+glow_enabled = true
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.01
 volumetric_fog_anisotropy = 0.59
@@ -22,7 +26,7 @@ volumetric_fog_anisotropy = 0.59
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_3ur66"]
 auto_exposure_enabled = true
 auto_exposure_scale = 0.1
-auto_exposure_speed = 61.02
+auto_exposure_speed = 1.0
 auto_exposure_max_sensitivity = 87.0
 
 [sub_resource type="BoxMesh" id="BoxMesh_a27we"]
@@ -42,6 +46,46 @@ size = Vector3(200, 1, 200)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_w4ucx"]
 size = Vector3(28.7008, 0.20813, 34.5734)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2hhmk"]
+size = Vector3(0.38, 0.355, 7.25)
+
+[sub_resource type="GDScript" id="GDScript_f7h5f"]
+script/source = "extends Node3D
+
+@export var player: Node3D  # Assigne le joueur depuis l'éditeur
+
+func _process(delta):
+	if player:
+		var player_x = player.global_transform.origin.x
+		var window_x = global_transform.origin.x
+
+		# Si le joueur est de l'autre côté sur l'axe X, on tourne de 180°
+		if player_x < window_x:
+			rotation.y = 0  # Face normale
+		else:
+			rotation.y = PI  # Rotation de 180°
+"
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_reap4"]
+material = ExtResource("5_f7h5f")
+size = Vector2(5.985, 6.97)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vw1qo"]
+size = Vector3(0.085, 7.41, 7.25)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f7h5f"]
+transparency = 1
+metallic = 1.0
+roughness = 0.62
+roughness_texture = ExtResource("6_vw1qo")
+normal_enabled = true
+normal_scale = 0.4
+normal_texture = ExtResource("5_2hhmk")
+anisotropy_enabled = true
+anisotropy = 0.84
+uv1_triplanar = true
+uv1_triplanar_sharpness = 0.186703
 
 [sub_resource type="BoxMesh" id="BoxMesh_3ur66"]
 size = Vector3(3.515, 8.36, 0.25)
@@ -94,18 +138,21 @@ func interact():
 "
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_f7h5f"]
-size = Vector3(2.22485, 1, 0.753197)
+size = Vector3(1.33234, 1, 0.42152)
 
 [node name="SPC" type="Node3D"]
 
 [node name="LightmapGI" type="LightmapGI" parent="."]
+quality = 3
 supersampling = true
 directional = true
 shadowmask_mode = 2
 interior = true
 light_data = ExtResource("3_0p3hi")
 
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
+[node name="Lights" type="Node" parent="."]
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(0.907161, 0, 0.420783, 0, 1, 0, -0.420783, 0, 0.907161, -22.9322, 0.769615, -10.2104)
 light_color = Color(1, 0.829592, 0.730158, 1)
 light_energy = 0.31
@@ -115,8 +162,8 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D9" type="OmniLight3D" parent="."]
-transform = Transform3D(0.890634, 0, 0.454722, 0, 1, 0, -0.454722, 0, 0.890634, -10.7837, 4.91649, -12.1518)
+[node name="OmniLight3D9" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(0.890634, 0, 0.454722, 0, 1, 0, -0.454722, 0, 0.890634, -10.7837, 7.33555, -12.1518)
 light_color = Color(0.971328, 0.912654, 1, 1)
 light_energy = 1.932
 shadow_enabled = true
@@ -125,7 +172,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D17" type="OmniLight3D" parent="."]
+[node name="OmniLight3D17" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9322, 0.769615, -14.3074)
 light_color = Color(1, 0.829592, 0.730158, 1)
 light_energy = 0.31
@@ -135,7 +182,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D16" type="OmniLight3D" parent="."]
+[node name="OmniLight3D16" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.70098, 4.17761, -11.8016)
 light_color = Color(0.816947, 0.846863, 1, 1)
 light_energy = 3.046
@@ -145,7 +192,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D10" type="OmniLight3D" parent="."]
+[node name="OmniLight3D10" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.1741, 5.27781, -22.324)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -153,7 +200,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D2" type="OmniLight3D" parent="."]
+[node name="OmniLight3D2" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1663, 3.22095, 5.9106)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -161,7 +208,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D5" type="OmniLight3D" parent="."]
+[node name="OmniLight3D5" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.25749, 3.22095, -2.16163)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -169,7 +216,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D6" type="OmniLight3D" parent="."]
+[node name="OmniLight3D6" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.9936, 3.22095, -0.502305)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -177,7 +224,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D7" type="OmniLight3D" parent="."]
+[node name="OmniLight3D7" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.5635, 3.22095, 1.28047)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -185,7 +232,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D11" type="OmniLight3D" parent="."]
+[node name="OmniLight3D11" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.3591, 3.22095, 8.18783)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -193,7 +240,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D3" type="OmniLight3D" parent="."]
+[node name="OmniLight3D3" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.21069, 3.46109, 21.7736)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -201,7 +248,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D13" type="OmniLight3D" parent="."]
+[node name="OmniLight3D13" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.9268, 3.46109, 14.9308)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -209,7 +256,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D14" type="OmniLight3D" parent="."]
+[node name="OmniLight3D14" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.604, 3.46109, -19.6705)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -217,7 +264,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D12" type="OmniLight3D" parent="."]
+[node name="OmniLight3D12" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.99135, 3.46109, 15.8991)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -225,7 +272,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D8" type="OmniLight3D" parent="."]
+[node name="OmniLight3D8" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.79811, 2.85199, 10.3002)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -233,7 +280,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D4" type="OmniLight3D" parent="."]
+[node name="OmniLight3D4" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.61895, 6.93913, -18.9007)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -241,7 +288,7 @@ distance_fade_enabled = true
 omni_range = 1599.01
 omni_attenuation = 1.394
 
-[node name="OmniLight3D15" type="OmniLight3D" parent="."]
+[node name="OmniLight3D15" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.71279, 6.93913, -4.82775)
 shadow_enabled = true
 shadow_blur = 2.095
@@ -338,80 +385,117 @@ surface_material_override/0 = ExtResource("4_3ur66")
 [node name="Empty" parent="spc2" index="16"]
 transform = Transform3D(30, 0, 0, 0, 30, 0, 0, 0, 30, 0, 1.02184, 0)
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+[node name="Floors" type="Node3D" parent="."]
 transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, -49.6572, 4.157, 45.388)
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Floors"]
 mesh = SubResource("BoxMesh_a27we")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("4_3ur66")
 
-[node name="MeshInstance3D7" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, 34.3273, 4.15729, 25.5965)
+[node name="MeshInstance3D7" type="MeshInstance3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 167.969, 0.000289917, -39.583)
 mesh = SubResource("PlaneMesh_0c0e1")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("4_3ur66")
 
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, 28.581, 4.549, 0.854)
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 156.476, 0.392, -89.068)
 mesh = SubResource("PlaneMesh_0c0e1")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("4_3ur66")
 
-[node name="MeshInstance3D4" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, -29.891, 4.167, -51.065)
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5324, 0.00999975, -192.906)
 mesh = SubResource("PlaneMesh_0c0e1")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("4_3ur66")
 
-[node name="MeshInstance3D10" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, -6.64896, 6.61657, -19.8551)
+[node name="MeshInstance3D10" type="MeshInstance3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 86.0165, 2.45957, -130.486)
+gi_mode = 2
 mesh = SubResource("BoxMesh_5v8c0")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("3_ifk3r")
 
-[node name="MeshInstance3D11" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, -9.43684, 6.61657, -4.53181)
+[node name="MeshInstance3D11" type="MeshInstance3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80.4407, 2.45957, -99.8396)
+gi_mode = 2
 mesh = SubResource("BoxMesh_5v8c0")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("3_ifk3r")
 
-[node name="MeshInstance3D9" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, -30.9656, 4.15729, -49.2951)
+[node name="MeshInstance3D9" type="MeshInstance3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.3832, 0.000289917, -189.366)
 mesh = SubResource("PlaneMesh_0c0e1")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("4_3ur66")
 
-[node name="MeshInstance3D5" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, -59.998, 4.20792, -4.49438)
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.6816, 0.05092, -99.7648)
 mesh = SubResource("PlaneMesh_0c0e1")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("4_3ur66")
 
-[node name="MeshInstance3D6" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, -10.737, 8.06012, 5.75321)
+[node name="MeshInstance3D6" type="MeshInstance3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.8404, 3.90312, -79.2696)
 mesh = SubResource("PlaneMesh_0c0e1")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("4_3ur66")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, -8.283, 0.301, 4.112)
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 82.7484, -3.856, -82.552)
 mesh = SubResource("PlaneMesh_3y5my")
 skeleton = NodePath("")
 surface_material_override/0 = ExtResource("4_3ur66")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
-transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, -8.28262, 0.1, 4.11189)
+[node name="StaticBody3D" type="StaticBody3D" parent="Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 82.7492, -4.057, -82.5522)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floors/StaticBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.311414, 0)
 shape = SubResource("BoxShape3D_0c0e1")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D"]
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="Floors/StaticBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.4971, 4.33394, -34.2955)
 shape = SubResource("BoxShape3D_w4ucx")
 
-[node name="CollisionShape3D3" type="CollisionShape3D" parent="StaticBody3D"]
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="Floors/StaticBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.926, 0.766942, -34.0632)
 shape = SubResource("BoxShape3D_w4ucx")
+
+[node name="Walls" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.569375, 4.52071, -11.8962)
+gi_mode = 2
+mesh = SubResource("BoxMesh_2hhmk")
+surface_material_override/0 = ExtResource("3_ifk3r")
+
+[node name="PlanarReflectorOrigin" type="Node3D" parent="Walls" node_paths=PackedStringArray("player")]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, -0.614095, 4.52702, -12.0005)
+script = SubResource("GDScript_f7h5f")
+player = NodePath("../../Player")
+
+[node name="PlanarReflector" type="MeshInstance3D" parent="Walls/PlanarReflectorOrigin" node_paths=PackedStringArray("main_cam")]
+mesh = SubResource("PlaneMesh_reap4")
+skeleton = NodePath("../../MeshInstance3D2")
+script = ExtResource("6_y61x8")
+materialToSet = ExtResource("5_f7h5f")
+reflection_fps = 40
+blur = 0.0
+far = -1
+main_cam = NodePath("../../../Player/Head/ThirdPersonCameraReference/SpringArm3D/Camera3D")
+reflection_camera_resolution_multiplier = 0.7
+metadata/_custom_type_script = "uid://bnhg5jehl1mhx"
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.569375, 4.14782, -11.8962)
+visible = false
+transparency = 0.93
+cast_shadow = 0
+mesh = SubResource("BoxMesh_vw1qo")
+surface_material_override/0 = SubResource("StandardMaterial3D_f7h5f")
 
 [node name="BIGDOOR" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.56052, 4.05783, -4.49963)
@@ -426,27 +510,39 @@ surface_material_override/0 = ExtResource("17_8idah")
 [node name="Player" parent="." groups=["player"] instance=ExtResource("2_3y5my")]
 transform = Transform3D(0.996657, 0, 0.081695, 0, 1, 0, -0.081695, 0, 0.996657, 8.98816, 1.97101, 15.6528)
 
-[node name="MeshInstance3D8" type="MeshInstance3D" parent="."]
+[node name="gatebutton" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.383844, 1.65004, -11.8658)
 mesh = SubResource("CylinderMesh_5v8c0")
 surface_material_override/0 = SubResource("StandardMaterial3D_2hhmk")
 
-[node name="Area3D" type="Area3D" parent="MeshInstance3D8" node_paths=PackedStringArray("interaction_text")]
+[node name="Area3D" type="Area3D" parent="gatebutton" node_paths=PackedStringArray("interaction_text")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.00744152)
 script = SubResource("GDScript_5v8c0")
 interaction_text = NodePath("../Label3D")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D8/Area3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.481851, 0, -0.0201998)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="gatebutton/Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.547617, 0, -0.00795746)
 shape = SubResource("BoxShape3D_f7h5f")
 
-[node name="Label3D" type="Label3D" parent="MeshInstance3D8"]
+[node name="Label3D" type="Label3D" parent="gatebutton"]
 transform = Transform3D(-0.0091454, 0, 0.999958, 0, 1, 0, -0.999958, 0, -0.0091454, -0.248572, 0.111489, -0.00908279)
 pixel_size = 0.0025
 text = "Open / Close"
 
-[node name="Node3D" parent="." node_paths=PackedStringArray("command_button") instance=ExtResource("21_bnj18")]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -24.9121, 3.04011, -12.3194)
-command_button = NodePath("../MeshInstance3D8/Area3D")
+[node name="thegate" parent="." node_paths=PackedStringArray("command_button") instance=ExtResource("21_bnj18")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -24.912, 3.455, -12.319)
+command_button = NodePath("../gatebutton/Area3D")
+
+[node name="Circle" parent="thegate/gate_001" index="0"]
+surface_material_override/0 = null
+
+[node name="Circle_001" parent="thegate/gate_001" index="1"]
+surface_material_override/0 = null
+
+[node name="Plane_001" parent="thegate/gate_001" index="2"]
+surface_material_override/0 = null
 
 [editable path="spc2"]
+[editable path="Player"]
+[editable path="thegate"]
+[editable path="thegate/gate_003"]

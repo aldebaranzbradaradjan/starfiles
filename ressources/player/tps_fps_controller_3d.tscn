@@ -18,11 +18,15 @@ input_crouch_action_name = "move_crouch"
 input_fly_mode_action_name = "move_fly_mode"
 underwater_env = ExtResource("3_611k8")
 
+[node name="ThirdPersonCameraReference" parent="Head" index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.31182, 0, 0.439755)
+
 [node name="SpringArm3D" type="SpringArm3D" parent="Head/ThirdPersonCameraReference" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.83035)
+transform = Transform3D(1, 0, 0, 0, 0.996336, 0.0855213, 0, -0.0855213, 0.996336, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Head/ThirdPersonCameraReference/SpringArm3D" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.124524, 2.42175)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.221225, 2.57731)
+fov = 50.0
 
 [node name="Player Audios" parent="." index="9" instance=ExtResource("4_7dfpu")]
 

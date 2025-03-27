@@ -70,8 +70,8 @@ func build_grid() -> void:
 	label.text = "Overlays"
 	grid.add_child(label)
 	
-	for slot_label in HumanizerGlobalConfig.config.equipment_slots[category].slots:
-		var slot = slot_label + HumanizerGlobalConfig.config.equipment_slots[category].suffix
+	for slot_label in ProjectSettings.get_setting("addons/humanizer/slots")[category]: #HumanizerGlobalConfig.config.equipment_slots[category].slots:
+		var slot = slot_label #+ HumanizerGlobalConfig.config.equipment_slots[category].suffix
 		label = Label.new()
 		label.text = slot_label
 		grid.add_child(label)

@@ -67,10 +67,14 @@ func _parse_category(human, category):
 	
 	#Equipment inspectors
 	var cat_id = 0
-	for equip_category:HumanizerSlotCategory in HumanizerGlobalConfig.config.equipment_slots:
+	
+	for equip_category in ProjectSettings.get_setting("addons/humanizer/slots"):#[category] :#HumanizerGlobalConfig.config.equipment_slots:
+		
+		print("equip_category", equip_category)
+		
 		var button = Button.new()
 		var container = ClothesInspector.new()
-		button.text = equip_category.category
+		button.text = equip_category#.category
 		button.pressed.connect(toggle_equipment.bind(container))
 		container.visible = false
 		var grid = GridContainer.new()

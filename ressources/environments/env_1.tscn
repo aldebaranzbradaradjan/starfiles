@@ -10,7 +10,8 @@
 [ext_resource type="Shader" uid="uid://d0irk2eg7j73l" path="res://ressources/fog/atmosphere_fog_shader/atmosphere_fog_shader.gdshader" id="8_ylvqd"]
 
 [sub_resource type="Gradient" id="Gradient_dblpd"]
-colors = PackedColorArray(0, 0, 0, 1, 1, 0.927972, 0.943013, 1)
+offsets = PackedFloat32Array(0, 0.87477)
+colors = PackedColorArray(0, 0, 0, 1, 1, 0.875, 0.875, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_lluu8"]
 gradient = SubResource("Gradient_dblpd")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=47 format=3 uid="uid://h2pxte8ho7nv"]
+[gd_scene load_steps=57 format=3 uid="uid://h2pxte8ho7nv"]
 
 [ext_resource type="PackedScene" uid="uid://gj3xwsg2cpmo" path="res://external_ressources/maps/zur_desert_temple.glb" id="1_5co2l"]
 [ext_resource type="LightmapGIData" uid="uid://clgafom8j0a4y" path="res://ressources/maps/Zur/lightmap/zur_desert_temple.lmbake" id="2_8fm1l"]
@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://6hq038py1n7t" path="res://external_ressources/textures/desert_sand/ground_0024_normal_opengl_1k.png" id="7_l6noj"]
 [ext_resource type="PackedScene" uid="uid://o3nh71h1l7sv" path="res://addons/gd_planar_reflections/planar_reflection.tscn" id="9_cjoqw"]
 [ext_resource type="Material" uid="uid://c4p4jr823j1gw" path="res://addons/gd_planar_reflections/ReflectionMaterial.tres" id="10_oj5e7"]
+[ext_resource type="Shader" uid="uid://bpqnetffr2iwc" path="res://addons/gd_planar_reflections/planar_reflection.gdshader" id="11_d2v7s"]
 
 [sub_resource type="Gradient" id="Gradient_5hx2i"]
 offsets = PackedFloat32Array(0, 0.744875, 0.931663)
@@ -66,7 +67,6 @@ ambient_light_color = Color(0.8, 0.7296, 0.6744, 0.8)
 ambient_light_sky_contribution = 0.21
 ambient_light_energy = 1.1232
 reflected_light_source = 2
-tonemap_mode = 4
 tonemap_white = 0.37
 ssr_max_steps = 512
 ssao_radius = 16.0
@@ -103,7 +103,6 @@ volumetric_fog_detail_spread = 6.0
 volumetric_fog_ambient_inject = 1.37
 volumetric_fog_temporal_reprojection_enabled = false
 adjustment_enabled = true
-adjustment_brightness = 1.13
 adjustment_color_correction = SubResource("GradientTexture2D_3fsjg")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p60tx"]
@@ -206,11 +205,65 @@ uv_scale = 0.247
 mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_ibsm4")])
 texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_yj6ek")])
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_38k76"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_d2v7s"]
 material = ExtResource("10_oj5e7")
 size = Vector2(5000, 5000)
 subdivide_width = 20
 subdivide_depth = 20
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_yuvaj"]
+frequency = 0.0091
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_tev7u"]
+noise = SubResource("FastNoiseLite_yuvaj")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_6382g"]
+noise_type = 2
+frequency = 0.0041
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_sycoq"]
+noise = SubResource("FastNoiseLite_6382g")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_d2v7s"]
+viewport_path = NodePath("PlanarReflection/@SubViewport@105741")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_hqcwr"]
+seed = 10
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ffsgu"]
+seamless = true
+as_normal_map = true
+noise = SubResource("FastNoiseLite_hqcwr")
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_w63yn"]
+seamless = true
+as_normal_map = true
+noise = SubResource("FastNoiseLite_hqcwr")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_g6qli"]
+resource_local_to_scene = true
+render_priority = -10
+shader = ExtResource("11_d2v7s")
+shader_parameter/noise1 = SubResource("NoiseTexture2D_tev7u")
+shader_parameter/noise2 = SubResource("NoiseTexture2D_sycoq")
+shader_parameter/albedo = Color(0.212062, 0.291842, 0.480469, 1)
+shader_parameter/proximity_fade_distance = 1.965
+shader_parameter/roughness = 0.189
+shader_parameter/metallic_texture_channel = Vector4(0.375, -0.395, 0.73, 0)
+shader_parameter/specular = 0.06
+shader_parameter/metallic = 0.14
+shader_parameter/texture_refraction = SubResource("NoiseTexture2D_ffsgu")
+shader_parameter/refraction = 0.0
+shader_parameter/refraction_texture_channel = Vector4(1, 1, 1, 1)
+shader_parameter/texture_normal = SubResource("NoiseTexture2D_ffsgu")
+shader_parameter/texture_normal2 = SubResource("NoiseTexture2D_w63yn")
+shader_parameter/reflection_screen_texture = SubResource("ViewportTexture_d2v7s")
+shader_parameter/normal_scale = 0.735001
+shader_parameter/normal_uv_mult = 16.0
+shader_parameter/distortion_strength = 0.05
+shader_parameter/uv1_scale = Vector3(20, 20, 20)
+shader_parameter/uv1_offset = Vector3(0, 0, 0)
+shader_parameter/reflection_strength = 0.276
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_r5qca"]
 bottom_radius = 0.145
@@ -478,11 +531,12 @@ metadata/_edit_lock_ = true
 
 [node name="PlanarReflection" parent="." node_paths=PackedStringArray("main_cam") instance=ExtResource("9_cjoqw")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 1.1325, 0)
-mesh = SubResource("PlaneMesh_38k76")
+mesh = SubResource("PlaneMesh_d2v7s")
+materialToSet = SubResource("ShaderMaterial_g6qli")
 reflection_fps = 60
-blur = 0.0
+blur = 0.005
 main_cam = NodePath("../Player/Head/ThirdPersonCameraReference/SpringArm3D/Camera3D")
-reflection_camera_resolution = Vector2i(320, 180)
+reflection_camera_resolution_multiplier = 0.84
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(3.04312, 0, 0, 0, -0.558817, 2.81252, 0, -1.32252, -1.1884, 0.75461, 12.2881, 24.2295)

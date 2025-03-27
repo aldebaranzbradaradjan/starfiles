@@ -131,3 +131,14 @@ use_action={
 scaling_3d/mode=2
 scaling_3d/fsr_sharpness=2.0
 lights_and_shadows/positional_shadow/atlas_size=6144
+
+[shader_globals]
+
+grass_visibility_range_end={
+"type": "float",
+"value": 200.0
+}
+grass_visibility_range_end_margin={
+"type": "float",
+"value": 20.0
+}

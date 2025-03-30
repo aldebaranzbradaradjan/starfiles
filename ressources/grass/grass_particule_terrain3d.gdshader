@@ -6,8 +6,8 @@ group_uniforms instancing;
 // the particle grid. Set instance_rows first, and then set Ammount
 // to instance_rows * instance_rows - this could be handled in gdscript, but
 // needs to be set manually for this example.
-uniform int instance_rows;
-uniform float instance_spacing : hint_range(0.125, 10.0, 0.125);
+uniform uint instance_rows;
+uniform float instance_spacing : hint_range(0.03125, 10.0, 0.03125) = 0.125 ;
 uniform bool align_to_normal = true;
 
 group_uniforms randomization;
@@ -33,6 +33,8 @@ uniform highp sampler2DArray _height_maps : repeat_disable;
 // Not used in this example, but could be read from, decoded
 // and used to filter based on base/over/blend data etc.
 uniform highp usampler2DArray _control_maps : repeat_disable;
+
+uniform mat4 camera_transform;
 
 // Defined Constants
 #define SKIP_PASS 0
@@ -90,26 +92,45 @@ mat3 align_to_vector(vec3 normal) {
 	return mat3(tangent, normal, bitangent);
 }
 
+float _sign (vec2 p1, vec2 p2, vec2 p3) {
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+bool PointInRectangle (vec2 pt, vec2 v1, vec2 v2, vec2 v3, vec2 v4) {
+    float d1, d2, d3, d4;
+    bool has_neg, has_pos;
+
+    d1 = _sign(pt, v1, v2);
+    d2 = _sign(pt, v2, v3);
+    d3 = _sign(pt, v3, v4);
+	d4 = _sign(pt, v4, v1);
+
+    has_neg = (d1 < 0.0) || (d2 < 0.0) || (d3 < 0.0) || (d4 < 0.0);
+    has_pos = (d1 > 0.0) || (d2 > 0.0) || (d3 > 0.0) || (d4 > 0.0);
+
+    return !(has_neg && has_pos);
+}
+
+mat2 rotate2d(float _angle) {
+    return mat2(vec2(cos(_angle), -sin(_angle)), vec2(sin(_angle), cos(_angle)));
+}
+
 void start() {
-	//create centered a grid
-	vec3 pos = vec3(0.0, 0.0, 0.0);
-	pos.z = float(INDEX);
-	pos.x = mod(pos.z, float(instance_rows));
-	pos.z = (pos.z - pos.x) / float(instance_rows);
-	pos.x -= float(instance_rows) * 0.5;
-	pos.z -= float(instance_rows) * 0.5;
-	pos *= instance_spacing;
+	// Create centered a grid
+    vec3 pos = vec3(float(INDEX % instance_rows), 0.0, float(INDEX / instance_rows));
+    pos.xz -= float(instance_rows >> 1u) + round(camera_transform[2].xz * float(instance_rows >> 1u));
+    // Apply spcaing
+    pos *= instance_spacing;
+    // Move the grid to the emitter, maintain snapping.
+    pos.x += EMISSION_TRANSFORM[3][0] - mod(EMISSION_TRANSFORM[3][0], instance_spacing);
+    pos.z += EMISSION_TRANSFORM[3][2] - mod(EMISSION_TRANSFORM[3][2], instance_spacing);
 
-	// Move the grid to the emitter, maintain snapping.
-	pos.x += EMISSION_TRANSFORM[3][0] - mod(EMISSION_TRANSFORM[3][0], instance_spacing);
-	pos.z += EMISSION_TRANSFORM[3][2] - mod(EMISSION_TRANSFORM[3][2], instance_spacing);
+    // Create a random value per-instance
+    vec3 r = vec3(random(pos.xz), random(pos.xz + vec2(0.5)), random(pos.xz - vec2(0.5)));
 
-	// Create a random value per-instance
-	vec3 r = vec3(random(pos.xz), random(pos.xz + vec2(0.5)), random(pos.xz - vec2(0.5)));
-
-	// Randomize instance spacing
-	pos.x += ((r.x * 2.0) - 1.0) * random_spacing * instance_spacing;
-	pos.z += ((r.y * 2.0) - 1.0) * random_spacing * instance_spacing;
+    // Randomize instance spacing
+    pos.x += ((r.x * 2.0) - 1.0) * random_spacing * instance_spacing;
+    pos.z += ((r.y * 2.0) - 1.0) * random_spacing * instance_spacing;
 
 	// Lookup offsets, ID and blend weight
 	const vec3 offsets = vec3(0, 1, 2);

@@ -13,15 +13,20 @@ extends GPUParticles3D
 
 func _update_process_parameters() -> void:
 	var process_rid: RID = process_material.get_rid()
+	var material_rid: RID = draw_pass_1.surface_get_material(0).get_rid()
+
 	if terrain:
 		var camera := terrain.get_camera()
 		if camera:
 			global_position.x = floorf(camera.global_position.x)
 			global_position.z = floorf(camera.global_position.z)
-			if(player) :
+			if(player && !Engine.is_editor_hint()) :
 				RenderingServer.material_set_param(process_rid, "camera_transform", player.transform)
+				RenderingServer.material_set_param(material_rid, "player_position", player.transform)
 			else :
 				RenderingServer.material_set_param(process_rid, "camera_transform", camera.get_camera_transform())
+				RenderingServer.material_set_param(material_rid, "player_position", camera.get_camera_transform())
+				
 		RenderingServer.material_set_param(process_rid, "_background_mode", terrain.material.world_background)
 		RenderingServer.material_set_param(process_rid, "_vertex_spacing", terrain.vertex_spacing)
 		RenderingServer.material_set_param(process_rid, "_vertex_density", 1.0 / terrain.vertex_spacing)
@@ -32,7 +37,7 @@ func _update_process_parameters() -> void:
 		RenderingServer.material_set_param(process_rid, "_region_locations", terrain.data.get_region_locations())
 		RenderingServer.material_set_param(process_rid, "_height_maps", terrain.data.get_height_maps_rid())
 		RenderingServer.material_set_param(process_rid, "_control_maps", terrain.data.get_control_maps_rid())
-		
+
 		
 func _ready() -> void:
 	_update_process_parameters()

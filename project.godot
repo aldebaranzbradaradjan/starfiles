@@ -129,6 +129,7 @@ use_action={
 [rendering]
 
 scaling_3d/fsr_sharpness=2.0
+anti_aliasing/quality/screen_space_aa=1
 lights_and_shadows/positional_shadow/atlas_size=6144
 anti_aliasing/mode=2
 

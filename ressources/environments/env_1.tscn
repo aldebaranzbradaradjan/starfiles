@@ -127,13 +127,12 @@ directional_shadow_blend_splits = true
 directional_shadow_max_distance = 900.0
 
 [node name="DirectionalLight3DFakeGlobalIllumination" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-1, 8.74226e-08, 0, 1.99631e-08, 0.22835, -0.973577, -8.5113e-08, -0.973577, -0.22835, 0, 0, 0)
+transform = Transform3D(-1, 8.74226e-08, 0, 1.99631e-08, 0.228351, -0.973577, -8.5113e-08, -0.973577, -0.228351, 0, 0, 0)
 light_color = Color(0.848491, 0.835752, 1, 1)
 light_energy = 0.216
 light_indirect_energy = 0.0
 light_volumetric_fog_energy = 0.0
 light_specular = 0.0
-shadow_enabled = true
 shadow_opacity = 0.8
 directional_shadow_split_1 = 0.045
 directional_shadow_split_2 = 0.15

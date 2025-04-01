@@ -28,14 +28,14 @@ shader_parameter/sun_color = Color(0.335848, 0.533409, 0.734375, 1)
 shader_parameter/moon_tint = Color(1, 0.828125, 0.828125, 1)
 shader_parameter/clouds_tint = Color(1, 0.912, 0.843, 1)
 shader_parameter/SCATERRING = false
-shader_parameter/SUN_POS = Vector3(0, 0.148155, -0.988964)
-shader_parameter/MOON_POS = Vector3(0, -0.148155, 0.988964)
-shader_parameter/MOON_TEX_POS = Vector3(0, -0.757679, 0.652627)
+shader_parameter/SUN_POS = Vector3(0, 0.973579, 0.228351)
+shader_parameter/MOON_POS = Vector3(0, -0.973579, -0.228351)
+shader_parameter/MOON_TEX_POS = Vector3(0, -0.993373, -0.114937)
 shader_parameter/LIGHTING_POS = Vector3(0, 1, 0)
 shader_parameter/lighting_strength = 0.0
 shader_parameter/MOON_PHASE = -1.1
 shader_parameter/moon_size = 0.03
-shader_parameter/attenuation = 0.578523
+shader_parameter/attenuation = 0.72
 shader_parameter/clouds_speed = 0.8
 
 [sub_resource type="Sky" id="Sky_mpsdc"]
@@ -47,7 +47,7 @@ sky = SubResource("Sky_mpsdc")
 ambient_light_source = 3
 ambient_light_color = Color(0.8, 0.7296, 0.6744, 0.8)
 ambient_light_sky_contribution = 0.21
-ambient_light_energy = 0.578523
+ambient_light_energy = 0.72
 tonemap_mode = 3
 tonemap_exposure = 0.53
 tonemap_white = 0.37
@@ -98,11 +98,12 @@ shader_parameter/noise_velocity1 = Vector3(0.255, 0, 0)
 shader_parameter/noise_velocity2 = Vector3(0, 0.12, 0)
 shader_parameter/noise_velocity3 = Vector3(0.01, 0, 0)
 
-[node name="WorldEnvironment" type="WorldEnvironment" node_paths=PackedStringArray("sun_moon")]
+[node name="WorldEnvironment" type="WorldEnvironment" node_paths=PackedStringArray("sun_moon", "fake_global_illumination")]
 environment = SubResource("Environment_o0m0n")
 script = ExtResource("7_bf2b3")
 sun_moon = NodePath("DirectionalLight3D")
-time_of_day_setup = 0.357
+fake_global_illumination = NodePath("DirectionalLight3DFakeGlobalIllumination")
+time_of_day_setup = 0.62
 moon_phase = -1.1
 moon_tint = Color(1, 0.828125, 0.828125, 1)
 night_level_light = 0.4
@@ -112,11 +113,26 @@ shape = 4
 material = SubResource("ShaderMaterial_acbfk")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-1, 1.29521e-08, -8.64578e-08, 0, 0.988962, 0.148154, 8.74228e-08, 0.148154, -0.988962, 0, 0.148155, -0.988964)
+transform = Transform3D(1, 0, 0, 0, 0.22835, 0.973577, 0, -0.973577, 0.22835, 0, 0.973579, 0.228351)
 light_color = Color(1, 0.912, 0.843, 1)
-light_energy = 0.578523
+light_energy = 0.72
 light_indirect_energy = 3.5
 light_volumetric_fog_energy = 2.811
+shadow_enabled = true
+shadow_opacity = 0.8
+directional_shadow_split_1 = 0.045
+directional_shadow_split_2 = 0.15
+directional_shadow_split_3 = 0.32
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 900.0
+
+[node name="DirectionalLight3DFakeGlobalIllumination" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-1, 8.74226e-08, 0, 1.99631e-08, 0.22835, -0.973577, -8.5113e-08, -0.973577, -0.22835, 0, 0, 0)
+light_color = Color(0.848491, 0.835752, 1, 1)
+light_energy = 0.216
+light_indirect_energy = 0.0
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
 shadow_enabled = true
 shadow_opacity = 0.8
 directional_shadow_split_1 = 0.045

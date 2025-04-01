@@ -1,9 +1,5 @@
-[gd_scene load_steps=48 format=3 uid="uid://thiblxndgel2"]
+[gd_scene load_steps=44 format=3 uid="uid://thiblxndgel2"]
 
-[ext_resource type="Texture2D" uid="uid://c3mtwys7kwsxm" path="res://external_ressources/textures/water/bwr_caustic.png" id="2_lsw7k"]
-[ext_resource type="Texture2D" uid="uid://b3yt8t8w4c6qa" path="res://ressources/sky/sky_shader/moon.png" id="3_558t6"]
-[ext_resource type="Texture2D" uid="uid://b5hqpr5lc5anb" path="res://external_ressources/textures/water/Water_N_B.png" id="4_4wbti"]
-[ext_resource type="Texture2D" uid="uid://bn2nsvm8ys4m4" path="res://external_ressources/textures/water/Water_UV.png" id="5_3oxn4"]
 [ext_resource type="Texture2D" uid="uid://cccbud3udp7k7" path="res://external_ressources/textures/rock_boulder_01/rock_boulder_dry_diff_1k.jpg" id="6_uy2n4"]
 [ext_resource type="Texture2D" uid="uid://b7vqo77swj3i8" path="res://external_ressources/textures/rock_boulder_01/rock_boulder_dry_arm_1k.jpg" id="7_grqso"]
 [ext_resource type="Texture2D" uid="uid://fsr51mekgnes" path="res://external_ressources/textures/rock_boulder_01/rock_boulder_dry_nor_gl_1k.jpg" id="8_peor8"]
@@ -15,112 +11,6 @@
 [ext_resource type="Texture2D" uid="uid://dkgq8elnuuhsw" path="res://external_ressources/textures/dry_riverbed_01/dry_riverbed_rock_rough_1k.jpg" id="14_tkckr"]
 [ext_resource type="Material" uid="uid://bmiex4k5ntlbu" path="res://external_ressources/textures/dry_riverbed_01/mat.tres" id="15_2tg1w"]
 [ext_resource type="Texture2D" uid="uid://dc41t7g6ftgf0" path="res://external_ressources/textures/water/water 0340normal.jpg" id="16_uh1ql"]
-
-[sub_resource type="Shader" id="Shader_s54ib"]
-code = "// NOTE: Shader automatically converted from Godot Engine 4.3.stable's StandardMaterial3D.
-
-shader_type spatial;
-render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx;
-
-uniform vec4 albedo : source_color;
-uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
-uniform float point_size : hint_range(0.1, 128.0, 0.1);
-
-uniform float roughness : hint_range(0.0, 1.0);
-uniform sampler2D texture_metallic : hint_default_white, filter_linear_mipmap, repeat_enable;
-uniform vec4 metallic_texture_channel;
-uniform sampler2D texture_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
-
-uniform float specular : hint_range(0.0, 1.0, 0.01);
-uniform float metallic : hint_range(0.0, 1.0, 0.01);
-
-uniform sampler2D texture_emission : source_color, hint_default_black, filter_linear_mipmap, repeat_enable;
-uniform vec4 emission : source_color;
-uniform float emission_energy : hint_range(0.0, 100.0, 0.01);
-
-uniform sampler2D texture_normal : hint_roughness_normal, filter_linear_mipmap, repeat_enable;
-uniform float normal_scale : hint_range(-16.0, 16.0);
-
-uniform sampler2D texture_heightmap : hint_default_black, filter_linear_mipmap, repeat_enable;
-uniform float heightmap_scale : hint_range(-16.0, 16.0, 0.001);
-uniform int heightmap_min_layers : hint_range(1, 64);
-uniform int heightmap_max_layers : hint_range(1, 64);
-uniform vec2 heightmap_flip;
-
-uniform vec3 uv1_scale;
-uniform vec3 uv1_offset;
-uniform vec3 uv2_scale;
-uniform vec3 uv2_offset;
-
-void vertex() {
-	UV = UV * uv1_scale.xy + uv1_offset.xy;
-}
-
-void fragment() {
-	vec2 base_uv = UV;
-
-	vec4 albedo_tex = texture(texture_albedo, base_uv + TIME*0.05);
-	ALBEDO = albedo.rgb * albedo_tex.rgb ;
-
-	float metallic_tex = dot(texture(texture_metallic, base_uv+ TIME*0.05), metallic_texture_channel);
-	METALLIC = metallic_tex * metallic;
-	SPECULAR = specular;
-
-	vec4 roughness_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
-	float roughness_tex = dot(texture(texture_roughness, base_uv), roughness_texture_channel);
-	ROUGHNESS = roughness_tex * roughness;
-
-	// Normal Map: Enabled
-	NORMAL_MAP = texture(texture_normal, base_uv+ TIME*0.05).rgb;
-	NORMAL_MAP_DEPTH = normal_scale;
-
-	// Emission: Enabled
-	vec3 emission_tex = texture(texture_emission, base_uv+ NORMAL_MAP.x*0.1).rgb;
-	// Emission Operator: Add
-	EMISSION = (emission.rgb + emission_tex) * emission_energy;
-}
-"
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_6l5vj"]
-frequency = 0.0167
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_0t7ga"]
-noise = SubResource("FastNoiseLite_6l5vj")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_nwxqx"]
-render_priority = 0
-shader = SubResource("Shader_s54ib")
-shader_parameter/albedo = Color(1, 0, 0.29652, 1)
-shader_parameter/texture_albedo = ExtResource("16_uh1ql")
-shader_parameter/point_size = 0.1
-shader_parameter/roughness = 1.0
-shader_parameter/texture_metallic = ExtResource("3_558t6")
-shader_parameter/metallic_texture_channel = Vector4(-0.275, -4.015, 13.13, 0)
-shader_parameter/texture_roughness = ExtResource("5_3oxn4")
-shader_parameter/specular = 0.0
-shader_parameter/metallic = 0.69
-shader_parameter/texture_emission = ExtResource("2_lsw7k")
-shader_parameter/emission = Color(1, 0.589002, 0, 1)
-shader_parameter/emission_energy = 0.12
-shader_parameter/texture_normal = ExtResource("4_4wbti")
-shader_parameter/normal_scale = 16.0
-shader_parameter/texture_heightmap = SubResource("NoiseTexture2D_0t7ga")
-shader_parameter/heightmap_scale = 16.0
-shader_parameter/heightmap_min_layers = 4
-shader_parameter/heightmap_max_layers = 5
-shader_parameter/heightmap_flip = Vector2(1, 1)
-shader_parameter/uv1_scale = Vector3(0.89, 1.425, 1)
-shader_parameter/uv1_offset = Vector3(0.575, 0, 0)
-shader_parameter/uv2_scale = Vector3(0.68, 1, 1)
-shader_parameter/uv2_offset = Vector3(0.72, 0, 0)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_mbvqk"]
-lightmap_size_hint = Vector2i(1002, 1002)
-material = SubResource("ShaderMaterial_nwxqx")
-add_uv2 = true
-size = Vector2(200, 200)
-subdivide_width = 10
-subdivide_depth = 10
 
 [sub_resource type="Shader" id="Shader_sxrsd"]
 code = "// NOTE: Shader automatically converted from Godot Engine 4.3.stable's StandardMaterial3D.
@@ -530,13 +420,88 @@ size = Vector3(3.765, 25, 8.24)
 height = 0.434
 radius = 50.0
 
+[sub_resource type="Shader" id="Shader_akiph"]
+code = "shader_type canvas_item;
+
+uniform float timeScaleFactor = .04;
+
+// Make sure to use a seamless noise texture
+uniform sampler2D noise_texture: repeat_enable, filter_linear;
+
+float localTime() {
+	return TIME * timeScaleFactor;
+}
+
+mat2 makem2(float theta) {
+	float c = cos(theta);
+	float s = sin(theta);
+	return mat2(vec2(c, -s), vec2(s, c));
+}
+
+float noise(vec2 x) {
+	return texture(noise_texture, x * .01).x;
+}
+
+vec2 gradn(vec2 p) {
+	float ep = .09;
+	float gradx = noise(vec2(p.x + ep, p.y)) - noise(vec2(p.x - ep, p.y));
+	float grady = noise(vec2(p.x, p.y + ep)) - noise(vec2(p.x, p.y - ep));
+	return vec2(gradx, grady);
+}
+
+float flow(vec2 p) {
+	float z = 2.;
+	float rz = 0.;
+	vec2 bp = p;
+	
+	for(float i = 1.; i < 7.; ++i) {
+		p += localTime() * .6;
+		bp += localTime() * 1.9;
+		vec2 gr = gradn(i * p * .34 + localTime() * 1.);
+		gr *= makem2(localTime() * 6. - (.05 * p.x + 0.03 * p.y) * 40.);
+		p += gr * .5;
+		rz += (sin(noise(p) * 7.) *.5 + .5) / z;
+		p = mix(bp, p, .77);
+		z *= 1.4;
+		p *= 2.;
+		bp *= 1.9;
+	}
+	return rz;
+}
+
+void fragment() {
+	vec2 resolution = 1. / SCREEN_PIXEL_SIZE;
+	vec2 fragCoord = FRAGCOORD.xy;
+	fragCoord = vec2(fragCoord.x, resolution.y - fragCoord.y);
+	vec2 p = fragCoord / resolution - 0.5;
+	
+	p.x *= resolution.x / resolution.y;
+	p *= 3.;
+	
+	float rz = flow(p);
+	vec3 col = vec3(.2, .07, .01) / rz;
+	col = pow(col, vec3(1.4));
+	
+	COLOR = vec4(col, 1.0);
+}"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_nxjje"]
+frequency = 0.4282
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_w5pqh"]
+seamless = true
+noise = SubResource("FastNoiseLite_nxjje")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1byy3"]
+shader = SubResource("Shader_akiph")
+shader_parameter/timeScaleFactor = 0.02
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_w5pqh")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_akiph"]
+viewport_path = NodePath("SubViewport")
+
 [node name="Temple" type="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 66.8207, 0)
-
-[node name="Water2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -900.588, 144.788, -156.531)
-mesh = SubResource("PlaneMesh_mbvqk")
-skeleton = NodePath("../../Terrain3D")
 
 [node name="rampe" type="MeshInstance3D" parent="."]
 transform = Transform3D(-4.37114e-08, -0.211325, 0.977416, 0, 0.977416, 0.211325, -1, 9.2373e-09, -4.27242e-08, -1017.24, 365.007, -158.761)
@@ -794,7 +759,7 @@ transform = Transform3D(1, 0, 1.67037e-22, 0, 1, 0, 1.67037e-22, 0, 1, -0.261719
 shape = SubResource("CylinderShape3D_humgs")
 
 [node name="SpotLight3D2" type="SpotLight3D" parent="."]
-transform = Transform3D(-1, -8.74228e-08, -4.37114e-08, 4.37114e-08, 1.91069e-15, -1, 8.74228e-08, -1, 1.91069e-15, -910.7, 109.699, -155.541)
+transform = Transform3D(-1, -8.74228e-08, -4.37114e-08, 4.37114e-08, 1.91069e-15, -1, 8.74228e-08, -1, 1.91068e-15, -910.7, -6.73746, -155.541)
 light_color = Color(1, 0, 0.262128, 1)
 light_energy = 1.472
 light_indirect_energy = 16.0
@@ -804,3 +769,19 @@ spot_range = 278.858
 spot_attenuation = -0.14
 spot_angle = 48.4071
 spot_angle_attenuation = 0.052556
+
+[node name="SubViewport" type="SubViewport" parent="."]
+size = Vector2i(1024, 1024)
+
+[node name="ColorRect" type="ColorRect" parent="SubViewport"]
+material = SubResource("ShaderMaterial_1byy3")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(40, 0, 0, 0, -1.74846e-06, -40, 0, 40, -1.74846e-06, -912.08, 150.165, -154.965)
+extra_cull_margin = 16384.0
+texture = SubResource("ViewportTexture_akiph")

@@ -480,6 +480,10 @@ transform = Transform3D(1, 0, 0, 0, 0.942289, 0.334793, 0, -0.334793, 0.942289, 
 light_energy = 1.1232
 directional_shadow_max_distance = 100.0
 
+[node name="DirectionalLight3DFakeGlobalIllumination" parent="WorldEnvironment" index="2"]
+transform = Transform3D(-1, 8.74226e-08, 0, 8.23777e-08, 0.94229, -0.334793, -2.92686e-08, -0.334793, -0.94229, 0, 0, 0)
+light_energy = 0.33696
+
 [node name="Player" parent="." instance=ExtResource("5_vt7hh")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9205, 23.6668, 14.3157)
 

@@ -98,11 +98,10 @@ shader_parameter/noise_velocity1 = Vector3(0.255, 0, 0)
 shader_parameter/noise_velocity2 = Vector3(0, 0.12, 0)
 shader_parameter/noise_velocity3 = Vector3(0.01, 0, 0)
 
-[node name="WorldEnvironment" type="WorldEnvironment" node_paths=PackedStringArray("sun_moon", "fake_global_illumination")]
+[node name="WorldEnvironment" type="WorldEnvironment" node_paths=PackedStringArray("sun_moon")]
 environment = SubResource("Environment_o0m0n")
 script = ExtResource("7_bf2b3")
 sun_moon = NodePath("DirectionalLight3D")
-fake_global_illumination = NodePath("DirectionalLight3DFakeGlobalIllumination")
 time_of_day_setup = 0.62
 moon_phase = -1.1
 moon_tint = Color(1, 0.828125, 0.828125, 1)
@@ -119,20 +118,6 @@ light_energy = 0.72
 light_indirect_energy = 3.5
 light_volumetric_fog_energy = 2.811
 shadow_enabled = true
-shadow_opacity = 0.8
-directional_shadow_split_1 = 0.045
-directional_shadow_split_2 = 0.15
-directional_shadow_split_3 = 0.32
-directional_shadow_blend_splits = true
-directional_shadow_max_distance = 900.0
-
-[node name="DirectionalLight3DFakeGlobalIllumination" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-1, 8.74226e-08, 0, 1.99631e-08, 0.228351, -0.973577, -8.5113e-08, -0.973577, -0.228351, 0, 0, 0)
-light_color = Color(0.848491, 0.835752, 1, 1)
-light_energy = 0.216
-light_indirect_energy = 0.0
-light_volumetric_fog_energy = 0.0
-light_specular = 0.0
 shadow_opacity = 0.8
 directional_shadow_split_1 = 0.045
 directional_shadow_split_2 = 0.15

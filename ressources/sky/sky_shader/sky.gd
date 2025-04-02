@@ -5,7 +5,7 @@ var time_of_day: float = 0.0;
 var one_second: float = 1.0 / (24.0 * 60.0 * 60.0); # --- What part of a second takes in a day in the range from 0 to 1
 
 @export var sun_moon: DirectionalLight3D;
-@export var fake_global_illumination: DirectionalLight3D;
+#@export var fake_global_illumination: DirectionalLight3D;
 @onready var sky_shader: ShaderMaterial = environment.sky.sky_material;
 @export_range(0.0, 1.0) var time_of_day_setup: float  = 0.0:
 	get:
@@ -157,7 +157,7 @@ func set_time():
 	else:
 		if !sun_pos.is_equal_approx(Vector3.UP) and !sun_pos.is_equal_approx(Vector3.DOWN):
 			sun_moon.look_at_from_position(sun_pos,Vector3.ZERO,Vector3.UP); # move sun to position and look at center scene from position
-			fake_global_illumination.look_at_from_position(Vector3.ZERO,sun_pos,Vector3.DOWN);
+			#fake_global_illumination.look_at_from_position(Vector3.ZERO,sun_pos,Vector3.DOWN);
 			
 	light_energy = light_energy * (1-clouds_coverage * 0.5) * 0.9 * light_mult;
 	sun_moon.light_energy = light_energy;
@@ -165,8 +165,8 @@ func set_time():
 	sun_moon.shadow_opacity = (0.19 if (sun_pos.y < 0.0) else 0.8);
 	sun_moon.light_color = light_color;
 	
-	fake_global_illumination.rotation = sun_moon.rotation + Vector3(PI, 0, PI)
-	fake_global_illumination.light_energy = light_energy*0.3;
+	#fake_global_illumination.rotation = sun_moon.rotation + Vector3(PI, 0, PI)
+	#fake_global_illumination.light_energy = light_energy*0.3;
 	
 	environment.ambient_light_color = light_color*0.8 ;
 	environment.ambient_light_energy = light_energy;

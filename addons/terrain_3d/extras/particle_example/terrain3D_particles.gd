@@ -16,7 +16,7 @@ extends Node3D
 		_set_offsets()
 
 ## Width of an individual cell of the 3x3 grid
-@export_range(8.0, 512.0, 1.0) var cell_width: float = 32.0:
+@export_range(8.0, 256.0, 1.0) var cell_width: float = 32.0:
 	set(value):
 		cell_width = value
 		rows = maxi(int(cell_width / instance_spacing), 1)
@@ -24,7 +24,7 @@ extends Node3D
 		_set_offsets()
 
 ## Grid width. Must be odd. Higher values cull slightly better.
-@export_range(1, 31, 2) var grid_width: int = 3 :
+@export_range(1, 9, 2) var grid_width: int = 3 :
 	set(value):
 		grid_width = value
 		particle_count = 1
@@ -111,7 +111,7 @@ func _create_grid() -> void:
 	var aabb: AABB = AABB()
 	aabb.size = Vector3(
 		float(rows) * instance_spacing, height,
-		float(rows) * instance_spacing) * 1.1
+		float(rows) * instance_spacing)
 	aabb.position = aabb.size * -0.5
 	aabb.position.y = hr.y
 	for i in range(grid_width * grid_width):
@@ -120,13 +120,12 @@ func _create_grid() -> void:
 		particle_node.lifetime = 1.0
 		particle_node.explosiveness = 1.0
 		particle_node.amount_ratio = 1.0
-		particle_node.one_shot = true
 		particle_node.process_material = process_material
 		particle_node.draw_pass_1 = mesh
 		particle_node.speed_scale = 1.0
 		particle_node.material_override = mesh_material_override
 		particle_node.use_fixed_seed = true
-		particle_node.cast_shadow = GeometryInstance3D.ShadowCastingSetting.SHADOW_CASTING_SETTING_OFF
+		particle_node.cast_shadow = shadow_mode
 		if i > 0: # Use the same seed across all nodes
 			particle_node.seed = particle_nodes[0].seed
 		particle_node.custom_aabb = aabb

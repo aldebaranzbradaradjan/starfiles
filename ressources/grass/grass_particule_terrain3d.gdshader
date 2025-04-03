@@ -1,18 +1,19 @@
+// Copyright © 2025 Cory Petkovsek, Roope Palmroos, and Contributors.
+
+// This is an example particle shader designed to procedurally place
+// particles like grass, small rocks, and other ground effects, on the terrain
+// surface by reading the Terrain3D data maps. It works in tandem with the
+// Provided GDScript.
+
 shader_type particles;
 render_mode disable_velocity, disable_force;
 
-group_uniforms instancing;
-// Consider instance_rows * instance_spacing to be the total side length of
-// the particle grid. Set instance_rows first, and then set Ammount
-// to instance_rows * instance_rows - this could be handled in gdscript, but
-// needs to be set manually for this example.
-uniform uint instance_rows;
-uniform float instance_spacing : hint_range(0.03125, 10.0, 0.03125) = 0.125 ;
+group_uniforms options;
+uniform vec3 position_offset = vec3(0.);
 uniform bool align_to_normal = true;
-
-group_uniforms randomization;
+uniform float normal_strength : hint_range(0.01, 1.0, 0.01) = 0.3;
 uniform bool random_rotation = true;
-uniform float random_spacing : hint_range(0.0, 1.0, 0.01);
+uniform float random_spacing : hint_range(0.0, 1.0, 0.01) = 0.5;
 uniform vec3 min_scale = vec3(1.0);
 uniform vec3 max_scale = vec3(1.0);
 
@@ -20,21 +21,20 @@ group_uniforms filtering;
 uniform float condition_dither_range : hint_range(0.0, 1.0, 0.01) = 0.15;
 uniform float surface_slope_min : hint_range(0.0, 1.0, 0.01) = 0.87;
 
-group_uniforms maps;
+group_uniforms private;
+uniform vec3 camera_position = vec3(0.);
+uniform uint instance_rows = 1;
+uniform float instance_spacing = 0.5;
 uniform uint _background_mode = 0u;
 uniform float _vertex_spacing = 1.0;
 uniform float _vertex_density = 1.0; // = 1/_vertex_spacing
 uniform float _region_size = 1024.0;
-uniform float _region_texel_size = 0.0009765625; // = 1/1024
+uniform float _region_texel_size = 0.0009765625; // = 1/REGION_SIZE
 uniform int _region_map_size = 32;
 uniform int _region_map[1024];
 uniform vec2 _region_locations[1024];
 uniform highp sampler2DArray _height_maps : repeat_disable;
-// Not used in this example, but could be read from, decoded
-// and used to filter based on base/over/blend data etc.
-uniform highp usampler2DArray _control_maps : repeat_disable;
-
-uniform mat4 camera_transform;
+uniform highp sampler2DArray _control_maps : repeat_disable;
 
 // Defined Constants
 #define SKIP_PASS 0
@@ -84,7 +84,7 @@ mat3 rotation_matrix(vec3 axis, float angle) {
 
 mat3 align_to_vector(vec3 normal) {
 	vec3 up = vec3(0.0, 1.0, 0.0);
-	if (abs(dot(normal, up)) > 0.99) { // Avoid singularity
+	if (abs(dot(normal, up)) > 0.9999) { // Avoid singularity
 		up = vec3(1.0, 0.0, 0.0);
 	}
 	vec3 tangent = normalize(cross(up, normal));
@@ -92,45 +92,20 @@ mat3 align_to_vector(vec3 normal) {
 	return mat3(tangent, normal, bitangent);
 }
 
-float _sign (vec2 p1, vec2 p2, vec2 p3) {
-    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
-}
-
-bool PointInRectangle (vec2 pt, vec2 v1, vec2 v2, vec2 v3, vec2 v4) {
-    float d1, d2, d3, d4;
-    bool has_neg, has_pos;
-
-    d1 = _sign(pt, v1, v2);
-    d2 = _sign(pt, v2, v3);
-    d3 = _sign(pt, v3, v4);
-	d4 = _sign(pt, v4, v1);
-
-    has_neg = (d1 < 0.0) || (d2 < 0.0) || (d3 < 0.0) || (d4 < 0.0);
-    has_pos = (d1 > 0.0) || (d2 > 0.0) || (d3 > 0.0) || (d4 > 0.0);
-
-    return !(has_neg && has_pos);
-}
-
-mat2 rotate2d(float _angle) {
-    return mat2(vec2(cos(_angle), -sin(_angle)), vec2(sin(_angle), cos(_angle)));
-}
-
 void start() {
 	// Create centered a grid
-    vec3 pos = vec3(float(INDEX % instance_rows), 0.0, float(INDEX / instance_rows));
-    pos.xz -= float(instance_rows >> 1u) + round(camera_transform[2].xz * float(instance_rows >> 1u));
-    // Apply spcaing
-    pos *= instance_spacing;
-    // Move the grid to the emitter, maintain snapping.
-    pos.x += EMISSION_TRANSFORM[3][0] - mod(EMISSION_TRANSFORM[3][0], instance_spacing);
-    pos.z += EMISSION_TRANSFORM[3][2] - mod(EMISSION_TRANSFORM[3][2], instance_spacing);
+	vec3 pos = vec3(float(INDEX % instance_rows), 0.0, float(INDEX / instance_rows)) - float(instance_rows >> 1u);
+	// Apply spcaing
+	pos *= instance_spacing;
+	// Move the grid to the emitter, snapping is handled CPU side
+	pos.xz += EMISSION_TRANSFORM[3].xz;
 
-    // Create a random value per-instance
-    vec3 r = vec3(random(pos.xz), random(pos.xz + vec2(0.5)), random(pos.xz - vec2(0.5)));
-
-    // Randomize instance spacing
-    pos.x += ((r.x * 2.0) - 1.0) * random_spacing * instance_spacing;
-    pos.z += ((r.y * 2.0) - 1.0) * random_spacing * instance_spacing;
+	// Create random values per-instance, incorporating the seed, mask bits to avoid NAN/INF
+	float seed = fract(uintBitsToFloat(RANDOM_SEED & 0x7EFFFFFFu));
+	vec3 r = fract(vec3(random(pos.xz), random(pos.xz + vec2(0.25)), random(pos.xz - vec2(0.25))) + seed);
+	// Randomize instance spacing
+	pos.x += ((r.x * 2.0) - 1.0) * random_spacing * instance_spacing;
+	pos.z += ((r.z * 2.0) - 1.0) * random_spacing * instance_spacing;
 
 	// Lookup offsets, ID and blend weight
 	const vec3 offsets = vec3(0, 1, 2);
@@ -144,18 +119,18 @@ void start() {
 		invert.x * invert.y  // 3
 	);
 
-	ivec3 indexUV[4];
+	ivec3 index[4];
 	// map lookups
-	indexUV[0] = get_index_coord(index_id + offsets.xy, FRAGMENT_PASS);
-	indexUV[1] = get_index_coord(index_id + offsets.yy, FRAGMENT_PASS);
-	indexUV[2] = get_index_coord(index_id + offsets.yx, FRAGMENT_PASS);
-	indexUV[3] = get_index_coord(index_id + offsets.xx, FRAGMENT_PASS);
+	index[0] = get_index_coord(index_id + offsets.xy, FRAGMENT_PASS);
+	index[1] = get_index_coord(index_id + offsets.yy, FRAGMENT_PASS);
+	index[2] = get_index_coord(index_id + offsets.yx, FRAGMENT_PASS);
+	index[3] = get_index_coord(index_id + offsets.xx, FRAGMENT_PASS);
 
-	float h[8];
-	h[0] = texelFetch(_height_maps, indexUV[0], 0).r; // 0 (0,1)
-	h[1] = texelFetch(_height_maps, indexUV[1], 0).r; // 1 (1,1)
-	h[2] = texelFetch(_height_maps, indexUV[2], 0).r; // 2 (1,0)
-	h[3] = texelFetch(_height_maps, indexUV[3], 0).r; // 3 (0,0)
+	highp float h[8];
+	h[0] = texelFetch(_height_maps, index[0], 0).r; // 0 (0,1)
+	h[1] = texelFetch(_height_maps, index[1], 0).r; // 1 (1,1)
+	h[2] = texelFetch(_height_maps, index[2], 0).r; // 2 (1,0)
+	h[3] = texelFetch(_height_maps, index[3], 0).r; // 3 (0,0)
 	h[4] = texelFetch(_height_maps, get_index_coord(index_id + offsets.yz, VERTEX_PASS), 0).r; // 4 (1,2)
 	h[5] = texelFetch(_height_maps, get_index_coord(index_id + offsets.zy, VERTEX_PASS), 0).r; // 5 (2,1)
 	h[6] = texelFetch(_height_maps, get_index_coord(index_id + offsets.zx, VERTEX_PASS), 0).r; // 6 (2,0)
@@ -178,41 +153,58 @@ void start() {
 		h[2] * weights[2] +
 		h[3] * weights[3] ;
 
-	// Set base Transform
-	TRANSFORM[0].xyz = vec3(1.0, 0.0, 0.0);
-	TRANSFORM[1].xyz = vec3(0.0, 1.0, 0.0);
-	TRANSFORM[2].xyz = vec3(0.0, 0.0, 1.0);
-	// Note: this section and related functions may not be 100% correct.
-	{
-		// Base orientation vector
-		vec3 orientation = vec3(0., 1., 0.);
-		// Apply normal orientation
-		if (align_to_normal) {
-			orientation = w_normal;
-			mat3 alignment = align_to_vector(orientation);
-			TRANSFORM = mat4(alignment);
-		}
-		// Apply rotation around orientation
-		if (random_rotation) {
-			mat3 rotation = rotation_matrix(orientation, r.x * TAU);
-			TRANSFORM = mat4(rotation) * TRANSFORM;
-		}
-	}
+	// Offset, Rotation, Alignment.
+	TRANSFORM = mat4(1.0);
+	vec3 orientation = vec3(0., 1., 0.);
 
-	// calculate and apply the scale after rotating
+	// Calculate scale
 	vec3 scale = vec3(
 		mix(min_scale.x, max_scale.x, r.x),
 		mix(min_scale.y, max_scale.y, r.y),
 		mix(min_scale.z, max_scale.z, r.z));
+
+	// Apply scale to offset
+	vec3 offset = position_offset * scale;
+
+	// Apply normal orientation
+	if (align_to_normal) {
+		orientation = mix(orientation, w_normal, normal_strength);
+		mat3 alignment = align_to_vector(orientation);
+		offset = alignment * offset;
+		TRANSFORM = mat4(alignment);
+	}
+
+	// Apply rotation around orientation
+	if (random_rotation) {
+		mat3 rotation = rotation_matrix(orientation, r.x * TAU);
+		TRANSFORM = mat4(rotation) * TRANSFORM;
+	}
+
+	// Apply scale after rotating
 	TRANSFORM[0] *= scale.x;
 	TRANSFORM[1] *= scale.y;
 	TRANSFORM[2] *= scale.z;
 
+	// Filtering - Causes some particles to be rendered as degenerate triangles
+	// via 0./0. - Particles filtered this way are still processed by the GPU.
 	// Surface slope filtering
 	if (surface_slope_min > w_normal.y + (r.y - 0.5) * condition_dither_range) {
-		pos.z = 0. / 0.;
+		pos.y = 0. / 0.;
+		pos.xz = vec2(100000.0);
+	}
+
+	// Read control map
+	uint control = floatBitsToUint(texelFetch(_control_maps, index[3], 0).r);
+	bool auto = bool(control & 0x1u);
+	int base = int(control >>27u & 0x1Fu);
+	int over = int(control >> 22u & 0x1Fu);
+
+	// Hardcoded example, hand painted texture id 0 is filtered out.
+	if (!auto && (base == 0 || over == 0)) {
+		pos.y = 0. / 0.;
+		pos.xz = vec2(100000.0);
 	}
 
 	// apply the position
-	TRANSFORM[3].xyz = pos.xyz;
+	TRANSFORM[3].xyz = pos.xyz + offset;
 }

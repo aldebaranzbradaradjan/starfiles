@@ -13,6 +13,7 @@ uniform vec3 position_offset = vec3(0.);
 uniform bool align_to_normal = true;
 uniform float normal_strength : hint_range(0.01, 1.0, 0.01) = 0.3;
 uniform bool random_rotation = true;
+uniform float random_rotation_strength : hint_range(0.01, 1.0, 0.01) = 0.3;
 uniform float random_spacing : hint_range(0.0, 1.0, 0.01) = 0.5;
 uniform vec3 min_scale = vec3(1.0);
 uniform vec3 max_scale = vec3(1.0);
@@ -176,7 +177,7 @@ void start() {
 
 	// Apply rotation around orientation
 	if (random_rotation) {
-		mat3 rotation = rotation_matrix(orientation, r.x * TAU);
+		mat3 rotation = rotation_matrix(orientation, r.x * random_rotation_strength * TAU);
 		TRANSFORM = mat4(rotation) * TRANSFORM;
 	}
 

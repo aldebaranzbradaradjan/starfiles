@@ -10,6 +10,7 @@ var rig: HumanizerRig
 var skeleton_data : Dictionary = {} #bone names with parent, position and rotation data
 
 signal done_generating_materials
+signal skeleton_changed
 
 # if eyes are blank, wait for done_generating_materials in calling class 
 func load_config_async(_human_config:HumanConfig):
@@ -38,9 +39,9 @@ func get_CharacterBody3D(baked:bool):
 	var human = CharacterBody3D.new()
 
 	HumanizerLogger.profile("humanizer.get_CharacterBody3D", func():
-		hide_clothes_vertices()
 		
-		human.set_script(HumanizerResourceService.load_resource("res://addons/humanizer/scripts/utils/human_controller.gd"))
+		human.set_script(HumanizerResourceService.load_resource(ProjectSettings.get_setting("addons/humanizer/default_characterbody_script")))
+		human.human_config = human_config
 		var skeleton = get_skeleton()
 		human.add_child(skeleton)
 		skeleton.set_unique_name_in_owner(true)
@@ -135,27 +136,27 @@ func get_group_bake_arrays(group_name:String): #transparent, opaque or all
 
 func set_skin_color(color:Color):
 	human_config.skin_color = color
-	var body = human_config.get_equipment_in_slot("Body")
+	var body = human_config.get_equipment_in_slot("body")
 	body.material_config.generate_material_3D(materials[body.type])
 	#material_updated.emit(body)
 	
 func set_eye_color(color:Color):
 	human_config.eye_color = color
-	var slots = ["LeftEye","RightEye","Eyes"]
+	var slots = ["lefteye","righteye","eyes"]
 	for equip in human_config.get_equipment_in_slots(slots):
 		equip.material_config.generate_material_3D(materials[equip.type])
 		#material_updated.emit(equip)
 		
 func set_hair_color(color:Color):
 	human_config.hair_color = color
-	var hair_equip = human_config.get_equipment_in_slot("Hair")
+	var hair_equip = human_config.get_equipment_in_slot("hair")
 	if hair_equip != null:
 		hair_equip.material_config.generate_material_3D(materials[hair_equip.type])
 	set_eyebrow_color(human_config.eyebrow_color)
 
 func set_eyebrow_color(color:Color):
 	human_config.eyebrow_color = color
-	var slots = ["LeftEyebrow","RightEyebrow","Eyebrows"]
+	var slots = ["lefteyebrow","righteyebrow","eyebrows"]
 	for eyebrow_equip in human_config.get_equipment_in_slots(slots):
 		materials[eyebrow_equip.type].albedo_color = color
 		#material_updated.emit(eyebrow_equip)
@@ -214,6 +215,7 @@ func add_equipment(equip:HumanizerEquipment):
 	fit_equipment_mesh(equip_type.resource_name)
 	if equip_type.rig_config != null:
 		HumanizerRigService.skeleton_add_rigged_equipment(equip,mesh_arrays[equip_type.resource_name], skeleton_data)
+		skeleton_changed.emit()
 	update_equipment_weights(equip_type.resource_name)
 	init_equipment_material(equip)
 
@@ -223,6 +225,7 @@ func remove_equipment(equip:HumanizerEquipment):
 	mesh_arrays.erase(equip_type.resource_name)
 	if equip_type.rig_config != null:
 		HumanizerRigService.skeleton_remove_rigged_equipment(equip, skeleton_data)
+		skeleton_changed.emit()
 	materials.erase(equip_type.resource_name)
 	
 func get_body_mesh():
@@ -238,7 +241,8 @@ func set_targets(target_data:Dictionary):
 	HumanizerTargetService.set_targets(target_data,human_config.targets,helper_vertex)
 	fit_all_meshes()
 	HumanizerRigService.adjust_bone_positions(skeleton_data,rig,helper_vertex,human_config.equipment,mesh_arrays)
-
+	skeleton_changed.emit()
+	
 func fit_all_meshes():
 	for equip_name in human_config.equipment:
 		fit_equipment_mesh(equip_name)
@@ -260,6 +264,7 @@ func set_rig(rig_name:String):
 	update_bone_weights()
 	if &'root_bone' in human_config.components:
 		enable_root_bone_component()
+	skeleton_changed.emit()
 
 func get_skeleton()->Skeleton3D:
 	#print(skeleton_data)

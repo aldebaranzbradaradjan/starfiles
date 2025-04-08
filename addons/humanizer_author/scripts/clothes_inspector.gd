@@ -2,7 +2,7 @@
 class_name ClothesInspector
 extends ScrollContainer
 
-@export var category : int
+@export var category : String
 
 static var visible_setting := false
 
@@ -70,20 +70,20 @@ func build_grid() -> void:
 	label.text = "Overlays"
 	grid.add_child(label)
 	
-	for slot_label in ProjectSettings.get_setting("addons/humanizer/slots")[category]: #HumanizerGlobalConfig.config.equipment_slots[category].slots:
-		var slot = slot_label #+ HumanizerGlobalConfig.config.equipment_slots[category].suffix
+	for slot_id in ProjectSettings.get_setting_with_override("addons/humanizer/slots")[category]:
+		var slot_display = ProjectSettings.get_setting_with_override("addons/humanizer/slots")[category][slot_id]
 		label = Label.new()
-		label.text = slot_label
+		label.text = slot_display
 		grid.add_child(label)
 		grid.add_child(VSeparator.new())
 		var options = OptionButton.new()
-		asset_option_buttons[slot] = options
-		options.name = slot + 'OptionButton'
+		asset_option_buttons[slot_id] = options
+		options.name = slot_id + 'OptionButton'
 		options.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		grid.add_child(options)
 		#add equipment options
 		options.add_item(' -- None -- ')
-		for asset in HumanizerRegistry.filter_equipment({'slot'=slot}):
+		for asset in HumanizerRegistry.filter_equipment({'slot'=slot_id}):
 			var display_name = asset.display_name
 			if display_name == "":
 				display_name = asset.resource_name
@@ -91,16 +91,16 @@ func build_grid() -> void:
 			options.add_item(display_name)
 			options.set_item_metadata(idx,asset.resource_name)
 		options.unique_name_in_owner = true
-		options.item_selected.connect(_item_selected.bind(slot))
+		options.item_selected.connect(_item_selected.bind(slot_id))
 		
 		grid.add_child(VSeparator.new())
 		var materials = OptionButton.new()
-		material_option_buttons[slot] = materials
-		materials.name = slot + 'TextureOptionButton'
+		material_option_buttons[slot_id] = materials
+		materials.name = slot_id + 'TextureOptionButton'
 		grid.add_child(materials)
 		materials.unique_name_in_owner = true
 		materials.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		materials.item_selected.connect(_material_selected.bind(slot))
+		materials.item_selected.connect(_material_selected.bind(slot_id))
 		
 		grid.add_child(VSeparator.new())
 		var overlay_container = VBoxContainer.new()
@@ -108,12 +108,12 @@ func build_grid() -> void:
 		overlay_button.text = "Show Overlays"
 		overlay_button.hide()
 		overlay_container.add_child(overlay_button)
-		overlay_option_buttons[slot] = overlay_button
-		overlay_button.pressed.connect(_on_show_overlays_pressed.bind(slot))
+		overlay_option_buttons[slot_id] = overlay_button
+		overlay_button.pressed.connect(_on_show_overlays_pressed.bind(slot_id))
 		var item_list = VBoxContainer.new()
 		item_list.visible = false
 		overlay_container.add_child(item_list)
-		overlay_option_dropdowns[slot] = item_list
+		overlay_option_dropdowns[slot_id] = item_list
 		grid.add_child(overlay_container)
 		
 	for child in grid.get_children():
@@ -147,8 +147,8 @@ func fill_material_options(slot: String):
 	var equip_type = equip.get_type()
 	for mat_id in equip_type.textures:
 		var option_id = material_options.item_count
-		var mat_path = equip_type.textures[mat_id]
-		var mat_res = HumanizerResourceService.load_resource(mat_path)
+		var mat_res = equip_type.textures[mat_id]
+		#var mat_res = HumanizerResourceService.load_resource(mat_path)
 		var mat_name = mat_res.resource_name
 		material_options.add_item(mat_name)
 		material_options.set_item_metadata(option_id,mat_id)
@@ -174,8 +174,7 @@ func fill_overlay_options(slot: String):
 	overlay_option_buttons[slot].text = "Show Overlays"
 	overlay_option_buttons[slot].show()	
 	for overlay_id in equip_type.overlays:
-		var overlay_path = equip_type.overlays[overlay_id]
-		var overlay = HumanizerResourceService.load_resource(overlay_path)
+		var overlay = equip_type.overlays[overlay_id]
 		var checkbox := CheckBox.new()
 		checkbox.text = overlay.resource_name
 		checkbox.set_meta("overlay_id",overlay_id)

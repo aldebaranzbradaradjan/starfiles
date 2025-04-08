@@ -12,10 +12,8 @@ var human : HumanizerEditorTool:
 		set_options()
 
 func set_options():
-	
-	for folder in ProjectSettings.get_setting(\"addons/humanizer/asset_import_paths\"):
-		var rig_path = folder.path_join('presets')
-		for fl in OSPath.get_dirs(rig_path):
+	for path in ProjectSettings.get_setting(\"addons/humanizer/asset_import_paths\"):
+		for fl in OSPath.get_files(path.path_join('presets')):
 			add_item(fl.get_file().get_basename())
 			set_item_metadata(item_count - 1, fl)
 	item_selected.connect(_load_preset)

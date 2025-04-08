@@ -12,34 +12,13 @@ var anim_tree : AnimationTree
 @export var player : FPSController3D
 
 func _ready() -> void:
-	shirt = HumanizerEquipment.new(\"Shirt-MakeHumanTShirt\")
-	suit_top = HumanizerEquipment.new(\"Shirt-SuitTop\")
-	var config = HumanConfig.new()
-	config.targets['gender'] = 0.0
-	config.targets['age'] = .25
-	config.init_macros()
-	
-	config.eye_color = Color.GREEN
-	config.hair_color = Color.PURPLE
-	config.eyebrow_color = Color(\"550055\")
-	config.rig = ProjectSettings.get_setting( \"addons/humanizer/default_skeleton\")
-	config.add_equipment(HumanizerEquipment.new(\"Body-Default\",\"young_caucasian_female\"))
-	config.add_equipment(HumanizerEquipment.new(\"Pants-SkinnyJeans\"))
-	config.add_equipment(shirt)
-	config.add_equipment(HumanizerEquipment.new(\"Shoes-02\"))
-	config.add_equipment(HumanizerEquipment.new(\"RightEye-LowPolyEyeball\"))
-	config.add_equipment(HumanizerEquipment.new(\"LeftEye-LowPolyEyeball\"))
-	config.add_equipment(HumanizerEquipment.new(\"Hair-Ponytail01_Rigged\"))
-	config.add_equipment(HumanizerEquipment.new(\"RightEyebrow-002\"))
-	config.add_equipment(HumanizerEquipment.new(\"LeftEyebrow-002\"))
-	config.add_equipment(HumanizerEquipment.new(\"RightEyelash\"))
-	config.add_equipment(HumanizerEquipment.new(\"LeftEyelash\"))
+	var config = load(\"res://data/humans/MyHuman/config_MyHuman.res\")
 	humanizer.load_config_async(config)
+	humanizer.hide_clothes_vertices()
 	config.disable_component(\"main_collider\")
 	var char = humanizer.get_CharacterBody3D(false) ## can bake character here by setting argument to true
 	add_child(char)
-	HumanizerUtils.set_node_owner(char,self)
-	#char.camera = $Camera3D
+	HumanizerEditorUtils.set_node_owner(char, self)
 	body_mesh_inst = char.get_node(\"Avatar\")
 	anim_player = char.get_node(\"AnimationTree/AnimationPlayer\")
 	anim_tree = char.get_node(\"AnimationTree\")

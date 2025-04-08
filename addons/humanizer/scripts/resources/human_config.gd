@@ -54,7 +54,7 @@ static func new_default():
 	var new_config = HumanConfig.new()
 	new_config.init_macros()
 	new_config.rig = ProjectSettings.get_setting("addons/humanizer/default_skeleton")
-	new_config.add_equipment(HumanizerEquipment.new("DefaultBody"))
+	new_config.add_equipment(HumanizerEquipment.new("Body-Default"))
 	new_config.add_equipment(HumanizerEquipment.new("RightEye-LowPolyEyeball"))
 	new_config.add_equipment(HumanizerEquipment.new("LeftEye-LowPolyEyeball"))
 	return new_config
@@ -95,6 +95,7 @@ func set_equipment_material(equip:HumanizerEquipment,material):
 
 func get_equipment_in_slot(slot_name:String)->HumanizerEquipment:
 	for equip in equipment.values():
+		print("search for slot ", slot_name, " equip ", equip)
 		if slot_name in equip.get_type().slots:
 			return equip # should only be one item per slot
 	return null

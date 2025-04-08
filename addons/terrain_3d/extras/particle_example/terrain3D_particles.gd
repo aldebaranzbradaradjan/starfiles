@@ -126,18 +126,20 @@ func _create_grid() -> void:
 		for z in range(-half_width, half_width + 1):
 			var ring: int = clampi(maxi(absi(x), absi(z)), 0, lod_meshs.size() - 1)
 			var particle_node = GPUParticles3D.new()
-			particle_node.amount = amount/(ring+1)
+			particle_node.amount = amount # /(ring+1)
 			var process = process_material.duplicate()
 			process_materials.push_back(process)
 			particle_node.process_material = process
-			RenderingServer.material_set_param(process.get_rid(), "instance_spacing", instance_spacing*(ring+1))
-			RenderingServer.material_set_param(process.get_rid(), "instance_rows", int(rows/(ring+1)))
+			var _spacing = instance_spacing #*(ring+1)
+			var _rows = rows #int(rows/(ring+1))
+			RenderingServer.material_set_param(process.get_rid(), "instance_spacing", _spacing)
+			RenderingServer.material_set_param(process.get_rid(), "instance_rows", _rows)
 			
 			particle_node.lifetime = 1.0
 			particle_node.explosiveness = 1.0
 			particle_node.amount_ratio = 1.0
 			particle_node.draw_pass_1 = lod_meshs[ring]
-			particle_node.speed_scale = 0.000001
+			particle_node.speed_scale = 0.000000001
 			particle_node.custom_aabb = aabb
 			particle_node.cast_shadow = shadow_mode
 			if mesh_material_override:

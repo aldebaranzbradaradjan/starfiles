@@ -16,7 +16,7 @@ func _parse_category(human, category):
 	
 	# Header Section
 	scene.get_node('%ResetButton').pressed.connect(human.reset)
-	scene.get_node('%PresetsOptionButton').human = human
+	#scene.get_node('%PresetsOptionButton').human = human
 
 	## Color pickers
 	scene.get_node('%SkinColorPicker').color = human.human_config.skin_color
@@ -66,22 +66,18 @@ func _parse_category(human, category):
 	scene.get_node('%UnHideClothesVerticesButton').pressed.connect(human.unhide_clothes_vertices)
 	
 	#Equipment inspectors
-	var cat_id = 0
-	
-	for equip_category in ProjectSettings.get_setting("addons/humanizer/slots"):#[category] :#HumanizerGlobalConfig.config.equipment_slots:
-		
-		print("equip_category", equip_category)
-		
+	for category_id in ProjectSettings.get_setting_with_override("addons/humanizer/slots"):
+		var category_dict : Dictionary = ProjectSettings.get_setting_with_override("addons/humanizer/slots")[category_id]
 		var button = Button.new()
 		var container = ClothesInspector.new()
-		button.text = equip_category#.category
+		button.text = category_id
 		button.pressed.connect(toggle_equipment.bind(container))
 		container.visible = false
 		var grid = GridContainer.new()
 		grid.name = "GridContainer"
 		container.add_child(grid)
 		container.custom_minimum_size.y = 300
-		container.category = cat_id		
+		container.category = category_id		
 		scene.get_node('%Equipment').add_child(button)
 		scene.get_node('%Equipment').add_child(container)
 		grid.owner = container
@@ -91,7 +87,6 @@ func _parse_category(human, category):
 		container.overlay_added.connect(human.add_overlay)
 		container.overlay_removed.connect(human.remove_overlay)
 		container.config = human.human_config
-		cat_id += 1
 		
 	# Add shapekey categories and sliders
 	var sliders = HumanizerTargetService.get_shapekey_categories()

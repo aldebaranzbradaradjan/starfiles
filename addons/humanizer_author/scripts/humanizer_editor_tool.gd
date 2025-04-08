@@ -18,7 +18,7 @@ var _base_hips_height: float:
 
 var save_path: String:
 	get:
-		var path = "addons/humanizer/asset_import_paths" #HumanizerGlobalConfig.config.human_export_path
+		var path = ProjectSettings.get_setting_with_override("addons/humanizer/human_export_path") 
 		if path == null:
 			path = 'res://data/humans'
 		return path.path_join(human_name)
@@ -50,32 +50,30 @@ var morph_data := {}
 
 @export_group('Node Overrides')
 ## The root node type for baked humans
-@export_enum("CharacterBody3D", "RigidBody3D", "StaticBody3D", "Area3D") var _baked_root_node: String = ProjectSettings.get_setting("addons/humanizer/default_baked_root_node")# HumanizerGlobalConfig.config.default_baked_root_node
+@export_enum("CharacterBody3D", "RigidBody3D", "StaticBody3D", "Area3D") var _baked_root_node: String = ProjectSettings.get_setting_with_override("addons/humanizer/default_baked_root_node")
 ## The script to put on the root node of saved characters
 @export_file var _character_script: String
 ## Texture atlas resolution for the baked character
-@export_enum("1k:1024", "2k:2048", "4k:4096") var atlas_resolution: int = 2048 #ProjectSettings.get_setting("addons/humanizer/atlas_resolution") #HumanizerGlobalConfig.config.atlas_resolution
+@export_enum("1k:1024", "2k:2048", "4k:4096") var atlas_resolution: int = ProjectSettings.get_setting_with_override("addons/humanizer/atlas_resolution") 
 ## The scene to be added as an animator for the character
-#HumanizerResourceService.load_resource(ProjectSettings.get_setting("addons/humanizer/default_animation_tree")).instantiate()
-#@export var _animator_scene: PackedScene = ProjectSettings.get_setting("addons/humanizer/default_animation_tree") #HumanizerGlobalConfig.config.default_animation_tree
-@export var _animator_scene: PackedScene = HumanizerResourceService.load_resource(ProjectSettings.get_setting("addons/humanizer/default_animation_tree"))
+@export var _animator_scene: PackedScene = ProjectSettings.get_setting_with_override("addons/humanizer/default_animation_tree")
 ## THe rendering layers for the human's 3d mesh instances
-@export_flags_3d_render var _render_layers = ProjectSettings.get_setting("addons/humanizer/character_render_layers"): #HumanizerGlobalConfig.config.default_character_render_layers:
+@export_flags_3d_render var _render_layers = ProjectSettings.get_setting_with_override("addons/humanizer/default_character_render_layers"):
 	set(value):
 		_render_layers = value
 		for child in get_children():
 			if child is MeshInstance3D:
 				child.layers = _render_layers
 ## The physics layers the character collider resides in
-@export_flags_3d_physics var _character_layers = ProjectSettings.get_setting("addons/humanizer/character_physics_layers")  #HumanizerGlobalConfig.config.default_character_physics_layers
+@export_flags_3d_physics var _character_layers = ProjectSettings.get_setting_with_override("addons/humanizer/default_character_physics_layers")
 ## The physics layers a staticbody character collider resides in
-@export_flags_3d_physics var _staticbody_layers = ProjectSettings.get_setting("addons/humanizer/staticbody_physics_layers") #HumanizerGlobalConfig.config.default_staticbody_physics_layers
+@export_flags_3d_physics var _staticbody_layers = ProjectSettings.get_setting_with_override("addons/humanizer/default_staticbody_physics_layers")
 ## The physics layers the character collider collides with
-@export_flags_3d_physics var _character_mask = ProjectSettings.get_setting("addons/humanizer/character_physics_mask") #HumanizerGlobalConfig.config.default_character_physics_mask
+@export_flags_3d_physics var _character_mask = ProjectSettings.get_setting_with_override("addons/humanizer/default_character_physics_mask")
 ## The physics layers the physical bones reside in
-@export_flags_3d_physics var _ragdoll_layers = ProjectSettings.get_setting("addons/humanizer/physical_bone_layers") #HumanizerGlobalConfig.config.default_physical_bone_layers
+@export_flags_3d_physics var _ragdoll_layers = ProjectSettings.get_setting_with_override("addons/humanizer/default_physical_bone_layers")
 ## The physics layers the physical bones collide with
-@export_flags_3d_physics var _ragdoll_mask = ProjectSettings.get_setting("addons/humanizer/physical_bone_mask") #HumanizerGlobalConfig.config.default_physical_bone_mask
+@export_flags_3d_physics var _ragdoll_mask = ProjectSettings.get_setting_with_override("addons/humanizer/default_physical_bone_mask")
 
 signal done_loading
 
@@ -134,12 +132,12 @@ func set_shapekeys(shapekeys: Dictionary) -> void:
 
 ####  HumanConfig Resource and Scene Management ####
 func reset_scene() -> void:
-	print("resetting scene")
+	#print("resetting scene")
 	if has_node('MorphDriver'):
 		_delete_child_node($MorphDriver)
 	baked = false
 	#if human_config.rig == '':
-		#human_config.rig = HumanizerGlobalConfig.config.default_skeleton
+		#human_config.rig = ProjectSettings.get_setting_with_override("addons/humanizer/default_skeleton
 	for child in get_children():
 		if child is MeshInstance3D or child is Skeleton3D:
 			_delete_child_node(child)
@@ -150,17 +148,8 @@ func reset_scene() -> void:
 	notify_property_list_changed()
 
 func load_human() -> void:
-	print("loading human")
+	#print("loading human")
 	baked = false
-	var config = HumanConfig.new()
-	config.targets['gender'] = 0.0
-	config.targets['age'] = .25
-	config.init_macros()
-	config.eye_color = Color.GREEN
-	config.hair_color = Color.PURPLE
-	config.eyebrow_color = Color("550055")
-	config.rig = ProjectSettings.get_setting( "addons/humanizer/default_skeleton")
-	set_human_config(config)
 	humanizer.load_config_async(human_config)
 	reset_scene()
 	_deserialize()
@@ -174,16 +163,16 @@ func create_human_branch() -> Node3D:
 	var script: String
 	if _baked_root_node == 'StaticBody3D':
 		root_node = StaticBody3D.new()
-		script = ProjectSettings.get_setting("addons/humanizer/default_staticbody_script") #HumanizerGlobalConfig.config.default_staticbody_script
+		script = ProjectSettings.get_setting_with_override("addons/humanizer/default_staticbody_script")
 	elif _baked_root_node == 'CharacterBody3D':
 		root_node = CharacterBody3D.new()
-		script = ProjectSettings.get_setting("addons/humanizer/default_characterbody_script") #HumanizerGlobalConfig.config.default_characterbody_script
+		script = ProjectSettings.get_setting_with_override("addons/humanizer/default_characterbody_script")
 	elif _baked_root_node == 'RigidBody3D':
 		root_node = RigidBody3D.new()
-		script = ProjectSettings.get_setting("addons/humanizer/default_rigidbody_script") #HumanizerGlobalConfig.config.default_rigidbody_script
+		script = ProjectSettings.get_setting_with_override("addons/humanizer/default_rigidbody_script")
 	elif _baked_root_node == 'Area3D':
 		root_node = Area3D.new()
-		script = ProjectSettings.get_setting("addons/humanizer/default_area_script") #HumanizerGlobalConfig.config.default_area_script
+		script = ProjectSettings.get_setting_with_override("addons/humanizer/default_area_script")
 
 	root_node.name = human_name
 	if _character_script not in ['', null]:
@@ -329,7 +318,7 @@ func init_equipment(equip: HumanizerEquipment) -> void:
 		push_warning("Can't change equipment.  Already baked")
 		return
 	
-	var equip_type = equip.get_type()
+	var equip_type : HumanizerEquipmentType = equip.get_type()
 	var mesh_inst = HumanizerMeshInstance.new()
 	mesh_inst.trigger_material_update.connect(humanizer.update_material)
 	mesh_inst.name = equip.type
@@ -342,7 +331,7 @@ func init_equipment(equip: HumanizerEquipment) -> void:
 		mesh_inst.transform = Transform3D(human_config.transforms[equip.resource_name])
 	_add_child_node(mesh_inst)
 	
-	if equip_type.rigged:
+	if equip_type.is_rigged():
 		rebuild_skeleton() #update rig with additional asset bones, and remove any from previous asset
 	mesh_inst.skeleton = '../' + skeleton.name
 	mesh_inst.skin = skeleton.create_skin_from_rest_transforms()
@@ -367,7 +356,7 @@ func remove_equipment(equip: HumanizerEquipment) -> void:
 	var equip_type = equip.get_type()
 	_delete_child_by_name(equip_type.resource_name)
 	humanizer.remove_equipment(equip)
-	if equip_type.rigged:
+	if equip_type.is_rigged():
 		set_rig(human_config.rig) #remove bones from previous asset
 
 func remove_equipment_in_slot(slot: String) -> void:
@@ -448,7 +437,7 @@ func bake_surface() -> void:
 			_fit_all_meshes()
 		
 	if atlas_resolution == 0:
-		atlas_resolution = ProjectSettings.get_setting("addons/humanizer/atlas_resolution") #HumanizerGlobalConfig.config.atlas_resolution
+		atlas_resolution = ProjectSettings.get_setting_with_override("addons/humanizer/atlas_resolution")
 
 	var baked_surface :ArrayMesh = humanizer.combine_surfaces_to_mesh(bake_mesh_names, ArrayMesh.new(), atlas_resolution)
 	#cant regenerate normals and tangents after baking, because it reorders the vertices, and in some cases resizes, which makes absolutely no sense, but it then breaks the exported morph shapekeys  

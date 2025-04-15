@@ -50,6 +50,38 @@ humanizer/physical_bone_layers=4
 humanizer/physical_bone_mask=5
 humanizer/character_render_layers=1
 humanizer/atlas_resolution=2048
+humanizer_import/slot_folder_config={
+&"body": {
+&"slots": ["body"]
+},
+&"eyebrows": {
+&"left_right": true,
+&"slots": ["lefteyebrow", "righteyebrow"]
+},
+&"eyelashes": {
+&"left_right": true,
+&"slots": ["lefteyelash", "righteyelash"]
+},
+&"eyes": {
+&"left_right": true,
+&"slots": ["lefteye", "righteye"]
+},
+&"hair": {
+&"slots": ["hair"]
+},
+&"hats": {
+&"slots": ["headclothes"]
+},
+&"shoes": {
+&"slots": ["feetclothes"]
+},
+&"teeth": {
+&"slots": ["teeth"]
+},
+&"tongue": {
+&"slots": ["tongue"]
+}
+}
 
 [application]
 
@@ -77,7 +109,7 @@ movie_writer/movie_file="/run/media/florian/disk2/Work/Games/Godot Workfolder/Go
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/Imposter/plugin.cfg", "res://addons/SphynxMotionBlurToolkit/plugin.cfg", "res://addons/character-controller/plugin.cfg", "res://addons/dreadpon.spatial_gardener/plugin.cfg", "res://addons/humanizer/plugin.cfg", "res://addons/humanizer_author/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
+enabled=PackedStringArray("res://addons/Imposter/plugin.cfg", "res://addons/SphynxMotionBlurToolkit/plugin.cfg", "res://addons/character-controller/plugin.cfg", "res://addons/dreadpon.spatial_gardener/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
 
 [input]
 
@@ -127,12 +159,15 @@ use_action={
 ]
 }
 
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
 [rendering]
 
+scaling_3d/mode=2
 scaling_3d/fsr_sharpness=2.0
-anti_aliasing/quality/screen_space_aa=1
 lights_and_shadows/positional_shadow/atlas_size=6144
-anti_aliasing/mode=2
 
 [shader_globals]
 

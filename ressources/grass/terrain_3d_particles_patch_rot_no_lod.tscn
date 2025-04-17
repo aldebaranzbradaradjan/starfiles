@@ -1,29 +1,31 @@
-[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://dhs7aqu784h3l"]
+[gd_scene load_steps=5 format=3 uid="uid://dbq2vet3s5fjc"]
 
-[sub_resource type="Shader" id="Shader_355eb"]
-code = "// Copyright © 2025 Cory Petkovsek, Roope Palmroos, and Contributors.
-// This shader is a version of minimum.gdshader with flat normals for a low poly look.
-// Increase vertex_spacing for a better result.
+[sub_resource type="Shader" id="Shader_bo36m"]
+code = "shader_type particles;
+render_mode disable_velocity, disable_force;
 
-shader_type spatial;
-render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx, skip_vertex_transform;
+group_uniforms instancing;
+// Consider instance_rows * instance_spacing to be the total side length of
+// the particle grid. Set instance_rows first, and then set Ammount
+// to instance_rows * instance_rows - this could be handled in gdscript, but
+// needs to be set manually for this example.
+uniform int instance_rows;
+uniform float instance_spacing : hint_range(0.125, 10.0, 0.125);
+uniform bool align_to_normal = true;
 
-// Defined Constants
-#define SKIP_PASS 0
-#define VERTEX_PASS 1
-#define FRAGMENT_PASS 2
+group_uniforms randomization;
+uniform float random_rotation_strength : hint_range(0.01, 1.0, 0.01) = 0.3;
+uniform bool random_rotation = true;
+uniform float random_spacing : hint_range(0.0, 1.0, 0.01);
+uniform vec3 min_scale = vec3(1.0);
+uniform vec3 max_scale = vec3(1.0);
 
-#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
-    #define fma(a, b, c) ((a) * (b) + (c))
-    #define dFdxCoarse(a) dFdx(a)
-    #define dFdyCoarse(a) dFdy(a)
-#endif
+group_uniforms filtering;
+uniform float condition_dither_range : hint_range(0.0, 1.0, 0.01) = 0.15;
+uniform float surface_slope_min : hint_range(0.0, 1.0, 0.01) = 0.87;
 
-// Private uniforms
-uniform vec3 _camera_pos = vec3(0.f);
-uniform float _mesh_size = 48.f;
-uniform uint _background_mode = 1u; // NONE = 0, FLAT = 1, NOISE = 2
-uniform uint _mouse_layer = 0x80000000u; // Layer 32
+group_uniforms maps;
+uniform uint _background_mode = 0u;
 uniform float _vertex_spacing = 1.0;
 uniform float _vertex_density = 1.0; // = 1/_vertex_spacing
 uniform float _region_size = 1024.0;
@@ -32,24 +34,20 @@ uniform int _region_map_size = 32;
 uniform int _region_map[1024];
 uniform vec2 _region_locations[1024];
 uniform highp sampler2DArray _height_maps : repeat_disable;
-uniform highp sampler2DArray _control_maps : repeat_disable;
+// Not used in this example, but could be read from, decoded
+// and used to filter based on base/over/blend data etc.
+uniform highp usampler2DArray _control_maps : repeat_disable;
 
-// Varyings & Types
-// Some are required for editor functions
-varying float v_vertex_xz_dist;
-varying vec3 v_vertex;
+uniform float player_rotation;
 
-group_uniforms distance_fade;
-uniform float distance_fade_min : hint_range(0.0, 4096.0, 0.01) = 40.0;
-uniform float distance_fade_max : hint_range(0.0, 4096.0, 0.01) = 160.0;
+uniform highp sampler2D _particle_texture : repeat_disable, filter_nearest;
 
-group_uniforms shell;
-uniform sampler2D texture_noise : source_color, filter_nearest_mipmap_anisotropic, repeat_enable;
-uniform int shell_level = 0;
+uniform mat4 camera_transform;
 
-////////////////////////
-// Vertex
-////////////////////////
+// Defined Constants
+#define SKIP_PASS 0
+#define VERTEX_PASS 1
+#define FRAGMENT_PASS 2
 
 // Takes in world space XZ (UV) coordinates & search depth (only applicable for background mode none)
 // Returns ivec3 with:
@@ -60,8 +58,8 @@ ivec3 get_index_coord(const vec2 uv, const int search) {
 	vec2 o_uv = mod(r_uv,_region_size);
 	ivec2 pos;
 	int bounds, layer_index = -1;
-	for (int i = -1; i < clamp(search, SKIP_PASS, FRAGMENT_PASS); i++) {
-		if ((layer_index == -1 && _background_mode == 0u ) || i < 0) {
+	for (int i = -1; i < 0; i++) {
+		if ((layer_index == -1 && _background_mode == 0u) || i < 0) {
 			r_uv -= i == -1 ? vec2(0.0) : vec2(float(o_uv.x <= o_uv.y), float(o_uv.y <= o_uv.x));
 			pos = ivec2(floor((r_uv) * _region_texel_size)) + (_region_map_size / 2);
 			bounds = int(uint(pos.x | pos.y) < uint(_region_map_size));
@@ -71,127 +69,176 @@ ivec3 get_index_coord(const vec2 uv, const int search) {
 	return ivec3(ivec2(mod(r_uv,_region_size)), layer_index);
 }
 
-void vertex() {
-	// Get vertex of flat plane in world coordinates and set world UV
-	v_vertex = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-
-	// Camera distance to vertex on flat plane
-	v_vertex_xz_dist = length(v_vertex.xz - _camera_pos.xz);
-
-	// Geomorph vertex, set end and start for linear height interpolate
-	float scale = MODEL_MATRIX[0][0];
-	float vertex_lerp = smoothstep(0.55, 0.95, (v_vertex_xz_dist / scale - _mesh_size - 4.0) / (_mesh_size - 2.0));
-	vec2 v_fract = fract(VERTEX.xz * 0.5) * 2.0;
-	// For LOD0 morph from a regular grid to an alternating grid to align with LOD1+
-	vec2 shift = (scale < _vertex_spacing + 1e-6) ? // LOD0 or not
-		// Shift from regular to symetric
-		mix(v_fract, vec2(v_fract.x, -v_fract.y),
-			round(fract(round(mod(v_vertex.z * _vertex_density, 4.0)) *
-			round(mod(v_vertex.x * _vertex_density, 4.0)) * 0.25))
-			) :
-		// Symetric shift
-		v_fract * round((fract(v_vertex.xz * 0.25 / scale) - 0.5) * 4.0);
-	vec2 start_pos = v_vertex.xz * _vertex_density;
-	vec2 end_pos = (v_vertex.xz - shift * scale) * _vertex_density;
-	v_vertex.xz -= shift * scale * vertex_lerp;
-
-	// UV coordinates in world space. Values are 0 to _region_size within regions
-	UV = v_vertex.xz * _vertex_density;
-
-	// UV coordinates in region space + texel offset. Values are 0 to 1 within regions
-	UV2 = fma(UV, vec2(_region_texel_size), vec2(0.5 * _region_texel_size));
-
-	// Discard vertices for Holes. 1 lookup
-	ivec3 region = get_index_coord(start_pos, VERTEX_PASS);
-	uint control = floatBitsToUint(texelFetch(_control_maps, region, 0)).r;
-	bool hole = bool(control >>2u & 0x1u);
-
-	// Show holes to all cameras except mouse camera (on exactly 1 layer)
-	if ( !(CAMERA_VISIBLE_LAYERS == _mouse_layer) &&
-			(hole || (_background_mode == 0u && region.z < 0))) {
-		v_vertex.x = 0. / 0.;
-	} else {
-		// Interpolate Geomorph Start & End, set height. 2 Lookups.
-		ivec3 uv_a = get_index_coord(start_pos, VERTEX_PASS);
-		ivec3 uv_b = get_index_coord(end_pos, VERTEX_PASS);
-		float h = mix(texelFetch(_height_maps, uv_a, 0).r, texelFetch(_height_maps, uv_b, 0).r, vertex_lerp);
-		v_vertex.y = h + 0.1;
-		v_vertex.y += float(shell_level)*0.05;
-	}
-	
-	vec4 noise_tex = texture(texture_noise, UV2);
-	v_vertex.x += noise_tex.r;
-
-	// Convert model space to view space w/ skip_vertex_transform render mode
-	VERTEX = (VIEW_MATRIX * vec4(v_vertex, 1.0)).xyz;
-	NORMAL = normalize((MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
-	BINORMAL = normalize((MODELVIEW_MATRIX * vec4(BINORMAL, 0.0)).xyz);
-	TANGENT = normalize((MODELVIEW_MATRIX * vec4(TANGENT, 0.0)).xyz);
+float random (vec2 uv) {
+		float rf = fract(sin(dot(uv.xy,
+		vec2(12.9898,78.233))) * 43758.5453123);
+	return rf;
 }
 
-////////////////////////
-// Fragment
-////////////////////////
+mat3 rotation_matrix(vec3 axis, float angle) {
+	float c = cos(angle);
+	float s = sin(angle);
+	float t = 1.0 - c;
+	vec3 n = normalize(axis);
+	float x = n.x;
+	float y = n.y;
+	float z = n.z;
 
-void fragment() {
+	return mat3(
+		vec3(t * x * x + c, t * x * y - z * s, t * x * z + y * s),
+		vec3(t * x * y + z * s, t * y * y + c, t * y * z - x * s),
+		vec3(t * x * z - y * s, t * y * z + x * s, t * z * z + c));
+}
 
-	//{
-		// Distance Fade: Pixel Dither
-		float fade_distance = length(VERTEX);
+mat3 align_to_vector(vec3 normal) {
+	vec3 up = vec3(0.0, 1.0, 0.0);
+	if (abs(dot(normal, up)) > 0.99) { // Avoid singularity
+		up = vec3(1.0, 0.0, 0.0);
+	}
+	vec3 tangent = normalize(cross(up, normal));
+	vec3 bitangent = normalize(cross(tangent, normal));
+	return mat3(tangent, normal, bitangent);
+}
 
-		// Use interleaved gradient noise, which is fast but still looks good.
-		const vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
-		float fade = clamp(smoothstep(0., 50., fade_distance), 0.0, 1.0);
-		// Use a hard cap to prevent a few stray pixels from remaining when past the fade-out distance.
-		if (fade < 0.001 || fade < fract(magic.z * fract(dot(FRAGCOORD.xy, magic.xy)))) {
-			//discard;
+float _sign (vec2 p1, vec2 p2, vec2 p3) {
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+bool PointInRectangle (vec2 pt, vec2 v1, vec2 v2, vec2 v3, vec2 v4) {
+    float d1, d2, d3, d4;
+    bool has_neg, has_pos;
+
+    d1 = _sign(pt, v1, v2);
+    d2 = _sign(pt, v2, v3);
+    d3 = _sign(pt, v3, v4);
+	d4 = _sign(pt, v4, v1);
+
+    has_neg = (d1 < 0.0) || (d2 < 0.0) || (d3 < 0.0) || (d4 < 0.0);
+    has_pos = (d1 > 0.0) || (d2 > 0.0) || (d3 > 0.0) || (d4 > 0.0);
+
+    return !(has_neg && has_pos);
+}
+
+mat2 rotate2d(float _angle) {
+    return mat2(vec2(cos(_angle), -sin(_angle)), vec2(sin(_angle), cos(_angle)));
+}
+
+void start() {
+    // Create a grid, center and then offset in view direction along XZ plane.
+    vec3 pos = vec3(float(INDEX % uint(instance_rows)), 0.0, float(INDEX / uint(instance_rows)));
+    pos.xz -= float(uint(instance_rows) >> 1u) + round(camera_transform[2].xz * float(uint(instance_rows) >> 1u));
+    // Apply spcaing
+    pos *= instance_spacing;
+    // Move the grid to the emitter, maintain snapping.
+    pos.x += EMISSION_TRANSFORM[3][0] - mod(EMISSION_TRANSFORM[3][0], instance_spacing);
+    pos.z += EMISSION_TRANSFORM[3][2] - mod(EMISSION_TRANSFORM[3][2], instance_spacing);
+
+    // Create a random value per-instance
+    vec3 r = vec3(random(pos.xz), random(pos.xz + vec2(0.5)), random(pos.xz - vec2(0.5)));
+
+    // Randomize instance spacing
+    pos.x += ((r.x * 2.0) - 1.0) * random_spacing * instance_spacing;
+    pos.z += ((r.y * 2.0) - 1.0) * random_spacing * instance_spacing;
+
+    // Lookup offsets, ID and blend weight
+    const vec3 offsets = vec3(0, 1, 2);
+    vec2 index_id = floor(pos.xz * _vertex_density);
+	vec2 weight = fract(pos.xz * _vertex_density);
+	vec2 invert = 1.0 - weight;
+	vec4 weights = vec4(
+		invert.x * weight.y, // 0
+		weight.x * weight.y, // 1
+		weight.x * invert.y, // 2
+		invert.x * invert.y  // 3
+	);
+
+	ivec3 indexUV[4];
+	// map lookups
+	indexUV[0] = get_index_coord(index_id + offsets.xy, FRAGMENT_PASS);
+	indexUV[1] = get_index_coord(index_id + offsets.yy, FRAGMENT_PASS);
+	indexUV[2] = get_index_coord(index_id + offsets.yx, FRAGMENT_PASS);
+	indexUV[3] = get_index_coord(index_id + offsets.xx, FRAGMENT_PASS);
+
+	float h[8];
+	h[0] = texelFetch(_height_maps, indexUV[0], 0).r; // 0 (0,1)
+	h[1] = texelFetch(_height_maps, indexUV[1], 0).r; // 1 (1,1)
+	h[2] = texelFetch(_height_maps, indexUV[2], 0).r; // 2 (1,0)
+	h[3] = texelFetch(_height_maps, indexUV[3], 0).r; // 3 (0,0)
+	h[4] = texelFetch(_height_maps, get_index_coord(index_id + offsets.yz, VERTEX_PASS), 0).r; // 4 (1,2)
+	h[5] = texelFetch(_height_maps, get_index_coord(index_id + offsets.zy, VERTEX_PASS), 0).r; // 5 (2,1)
+	h[6] = texelFetch(_height_maps, get_index_coord(index_id + offsets.zx, VERTEX_PASS), 0).r; // 6 (2,0)
+	h[7] = texelFetch(_height_maps, get_index_coord(index_id + offsets.xz, VERTEX_PASS), 0).r; // 7 (0,2)
+	vec3 index_normal[4];
+	index_normal[0] = vec3(h[0] - h[1], _vertex_spacing, h[0] - h[7]);
+	index_normal[1] = vec3(h[1] - h[5], _vertex_spacing, h[1] - h[4]);
+	index_normal[2] = vec3(h[2] - h[6], _vertex_spacing, h[2] - h[1]);
+	index_normal[3] = vec3(h[3] - h[2], _vertex_spacing, h[3] - h[0]);
+	vec3 w_normal = normalize(
+		index_normal[0] * weights[0] +
+		index_normal[1] * weights[1] +
+		index_normal[2] * weights[2] +
+		index_normal[3] * weights[3]);
+
+	// set the height according to the heightmap data
+	pos.y =
+		h[0] * weights[0] +
+		h[1] * weights[1] +
+		h[2] * weights[2] +
+		h[3] * weights[3] ;
+
+	// Set base Transform
+	TRANSFORM[0].xyz = vec3(1.0, 0.0, 0.0);
+	TRANSFORM[1].xyz = vec3(0.0, 1.0, 0.0);
+	TRANSFORM[2].xyz = vec3(0.0, 0.0, 1.0);
+	// Note: this section and related functions may not be 100% correct.
+	{
+		// Base orientation vector
+		vec3 orientation = vec3(0., 1., 0.);
+		// Apply normal orientation
+		if (align_to_normal) {
+			orientation = w_normal;
+			mat3 alignment = align_to_vector(orientation);
+			TRANSFORM = mat4(alignment);
 		}
-	//}
+		// Apply rotation around orientation
+		if (random_rotation) {
+			mat3 rotation = rotation_matrix(orientation, r.x * random_rotation_strength * TAU);
+			TRANSFORM = mat4(rotation) * TRANSFORM;
+		}
+	}
 
-	// Recover UVs
-	vec2 uv = UV;
-	vec2 uv2 = UV2;
+	// calculate and apply the scale after rotating
+	vec3 scale = vec3(
+		mix(min_scale.x, max_scale.x, r.x),
+		mix(min_scale.y, max_scale.y, r.y),
+		mix(min_scale.z, max_scale.z, r.z));
+	TRANSFORM[0] *= scale.x;
+	TRANSFORM[1] *= scale.y;
+	TRANSFORM[2] *= scale.z;
 
-    float scale = 0.3;//clamp(1.0 / (0.1 * dist), 0.05, 1.0); // plus loin = plus petit scale
-    vec2 scaled_uv = uv * scale;
-    vec4 noise_tex = texture(texture_noise, scaled_uv);
-	float diameter = min(0.35, 0.35 * (16. / float(shell_level))*0.4) * fade;
-	if(noise_tex.r > diameter) discard;
+	// Surface slope filtering
+	if (surface_slope_min > w_normal.y + (r.y - 0.5) * condition_dither_range) {
+		pos.z = 0. / 0.;
+	}
 
-	// Apply terrain normals
-	NORMAL = normalize(cross(dFdyCoarse(VERTEX),dFdxCoarse(VERTEX)));
-	TANGENT = normalize(cross(NORMAL, vec3(0.0, 0.0, 1.0)));
-	BINORMAL = normalize(cross(NORMAL, TANGENT));
-
-	// Apply PBR
-	ALBEDO = vec3(.3, .4, .0) * (1.0-diameter*2.4) * 1. + (float(shell_level)*0.005);
-	ROUGHNESS = 0.90;
-	SPECULAR = 0.2;
+	// apply the position
+	TRANSFORM[3].xyz = pos.xyz;
 }
 "
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_355eb"]
-noise_type = 2
-frequency = 0.0198
-offset = Vector3(389.38, 0, 0)
-fractal_type = 0
-domain_warp_enabled = true
-domain_warp_type = 1
-domain_warp_fractal_type = 0
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_kxs12"]
-width = 1024
-height = 1024
-seamless = true
-noise = SubResource("FastNoiseLite_355eb")
-
-[resource]
-render_priority = 0
-shader = SubResource("Shader_355eb")
-shader_parameter/_camera_pos = Vector3(0, 0, 0)
-shader_parameter/_mesh_size = 48.0
-shader_parameter/_background_mode = 1
-shader_parameter/_mouse_layer = 2147483648
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kxs12"]
+shader = SubResource("Shader_bo36m")
+shader_parameter/instance_rows = 100
+shader_parameter/instance_spacing = 3.25
+shader_parameter/align_to_normal = true
+shader_parameter/random_rotation_strength = 0.3
+shader_parameter/random_rotation = true
+shader_parameter/random_spacing = 0.0
+shader_parameter/min_scale = Vector3(1, 1, 1)
+shader_parameter/max_scale = Vector3(1, 1, 1)
+shader_parameter/condition_dither_range = 0.15
+shader_parameter/surface_slope_min = 0.87
+shader_parameter/_background_mode = 0
 shader_parameter/_vertex_spacing = 1.0
 shader_parameter/_vertex_density = 1.0
 shader_parameter/_region_size = 1024.0
@@ -199,7 +246,70 @@ shader_parameter/_region_texel_size = 0.000976562
 shader_parameter/_region_map_size = 32
 shader_parameter/_region_map = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 shader_parameter/_region_locations = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-shader_parameter/distance_fade_min = 4096.0
-shader_parameter/distance_fade_max = 4096.0
-shader_parameter/texture_noise = SubResource("NoiseTexture2D_kxs12")
-shader_parameter/shell_level = 7
+shader_parameter/player_rotation = 0.0
+shader_parameter/camera_transform = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_agri0"]
+
+[sub_resource type="GDScript" id="GDScript_agri0"]
+script/source = "@tool
+extends GPUParticles3D
+
+@export var terrain: Terrain3D :
+	set(value):
+		terrain = value
+		_update_process_parameters()
+		
+@export var player: Node :
+	set(value):
+		player = value
+		_update_process_parameters()
+		
+var last_pos: Vector3 = Vector3.ZERO
+
+func _update_process_parameters() -> void:
+	var process_rid: RID = process_material.get_rid()
+	if terrain:
+		var camera := terrain.get_camera()
+		if !camera: return
+			#if(player) :
+				#RenderingServer.material_set_param(process_rid, \"player_rotation\", -deg_to_rad(player.rotation_degrees[1] + 90))
+			#else :
+				#RenderingServer.material_set_param(process_rid, \"player_rotation\", -deg_to_rad(camera.rotation_degrees[1] + 90))
+		RenderingServer.material_set_param(process_rid, \"camera_transform\", camera.get_camera_transform())
+		RenderingServer.material_set_param(process_rid, \"_background_mode\", terrain.material.world_background)
+		RenderingServer.material_set_param(process_rid, \"_vertex_spacing\", terrain.vertex_spacing)
+		RenderingServer.material_set_param(process_rid, \"_vertex_density\", 1.0 / terrain.vertex_spacing)
+		RenderingServer.material_set_param(process_rid, \"_region_size\", terrain.region_size)
+		RenderingServer.material_set_param(process_rid, \"_region_texel_size\", 1.0 / terrain.region_size)
+		RenderingServer.material_set_param(process_rid, \"_region_map_size\", 32)
+		RenderingServer.material_set_param(process_rid, \"_region_map\", terrain.data.get_region_map())
+		RenderingServer.material_set_param(process_rid, \"_region_locations\", terrain.data.get_region_locations())
+		RenderingServer.material_set_param(process_rid, \"_height_maps\", terrain.data.get_height_maps_rid())
+		RenderingServer.material_set_param(process_rid, \"_control_maps\", terrain.data.get_control_maps_rid())
+		restart(true)
+		
+		
+func _ready() -> void:
+	_update_process_parameters()
+	
+func _physics_process(delta: float) -> void:
+	if terrain:
+		var camera := terrain.get_camera()
+		if camera:
+			if last_pos.distance_squared_to(camera.global_position) > 1.0:
+				var pos: Vector3 = camera.global_position.snapped(Vector3.ONE)
+				global_position = pos;
+				_update_process_parameters()
+		
+"
+
+[node name="Terrain3DParticlesPatchRotNoLOD" type="GPUParticles3D"]
+cast_shadow = 0
+extra_cull_margin = 16384.0
+amount = 10000
+lifetime = 0.01
+explosiveness = 1.0
+process_material = SubResource("ShaderMaterial_kxs12")
+draw_pass_1 = SubResource("BoxMesh_agri0")
+script = SubResource("GDScript_agri0")
